@@ -6,7 +6,7 @@
 #include "Definitions.h"
 #include "Config.ino"
 
-// Forward declare global objects/variables if needed, or include the main header
+// Forward declare globals
 extern dealState currentDealState;
 extern displayState currentDisplayState;
 extern bool postDeal;
@@ -16,13 +16,16 @@ extern int8_t postCardsToDeal;
 extern bool cardDealt; // To reset after manual deal
 extern bool gameOver;
 extern bool advanceOnePlayer;
+extern const char* customFace;
+
 
 // Forward declare core functions games might need
-void dealSingleCard(String customFace = "");
+void dealSingleCard();
 void advanceMenu(); // Although games shouldn't typically call this directly
 void displayFace(const char *word);
 void startScrollText(const char *text, uint16_t start, uint16_t delay, uint16_t end);
 void updateScrollText();
+void updateDisplay();
 void stopScrollText();
 void moveOffActiveColor(bool rotateClockwise);
 void returnToActiveColor(bool rotateClockwise);
@@ -92,20 +95,37 @@ class Game {
 
   protected:
     // Variables
+    displayState lastDisplayState = DISPLAY_UNSET;
     bool scrollingStarted = false;
     uint8_t messageLine = 0;
     uint8_t messageRepetitions = 0; // TODO move handling of message lines into display array that is managed here...
 
-    void dispenseCards(uint8_t amount, const String &customFace = "") {
+    void dispenseCards(uint8_t amount) {
         for (uint8_t i = 0; i < amount; ++i) {
-            _dealSingleCard(customFace);
+            _dealSingleCard();
         }
+    }
+
+    // Display face wrapper to handle custom faces
+    void displayFace(const char* face) {
+        // TODO: handle scrolling face
+        lastDisplayState = currentDisplayState;
+        customFace = face;
+        currentDisplayState = displayState::CUSTOM_FACE;
+        updateDisplay();
+    }
+
+    void restoreFace() {
+        if (lastDisplayState != DISPLAY_UNSET) {
+            currentDisplayState = lastDisplayState;
+        }
+        lastDisplayState = DISPLAY_UNSET;
     }
 
   private:
     // Internal wrappers
-    void _dealSingleCard(const String &customFace = "") {
-        dealSingleCard(customFace);
+    void _dealSingleCard() {
+        dealSingleCard();
         cardDealt = false;
     }
 };

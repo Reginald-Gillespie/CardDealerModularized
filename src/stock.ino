@@ -316,6 +316,7 @@ int scrollIndex = -1;             // Start at -1 to hold the first frame longer.
 uint8_t messageRepetitions = 0;   // Variable for storing the number of times we have repeated scrolling text.
 char message[36];                 // We use "char" to save RAM. This is the max scroll text length, but it can be increased if necessary.
 int8_t messageLine = 0;           // For messages that scroll several lines, this variable holds which line we're scrolling.
+const char* customFace = "0  0";
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
@@ -375,7 +376,7 @@ to check, but using bools is an easy way to both set and check different dealing
 #pragma region STATE MACHINE FLAGS
 
 GameRegistry gameRegistry;
-Game* currentGamePtr = nullptr;
+Game *currentGamePtr = nullptr;
 
 bool rotatingCW = false;                   // Indicates clockwise rotation.
 bool rotatingCCW = false;                  // Indicates counter-clockwise rotation.
@@ -469,9 +470,9 @@ void handleToolsDealing();                         // This is where we handle de
 void handleToolsAdvancingDecisions();              // This is where we decide which direction to advance in during DEALR's "tools" subroutines
 
 // Functions related to dealing cards
-void dealSingleCard(String customFace="");        // Safe wrapper function for cardDispensingActions. Includes some pre- and post-processing steps.
-void cardDispensingActions(String customFace=""); // The series of actions that deal a single card.
-void prepareForDeal();        // The steps that get us ready to deal a single card.
+void dealSingleCard();        // Safe wrapper function for cardDispensingActions. Includes some pre- and post-processing steps.
+void cardDispensingActions(); // The series of actions that deal a single card.
+void prepareForDeal();                              // The steps that get us ready to deal a single card.
 
 // Functions related to DEALR rotation and color sensing
 void initializeToRed();                                      // Function for initializing to the red tag before a deal.
@@ -845,7 +846,7 @@ void handleDealingState() {
             return;
         }
 
-        if (riggedGame)  {
+        if (riggedGame) {
             // If the game is rigged and we have already dealt a card...
             handleRiggedGameAdvancingDecisions();
         } else {
@@ -856,7 +857,7 @@ void handleDealingState() {
 
     // Gemini said to add this and I have no clue why so Geronimo.
     if (dealInitialized && cardDealt) {
-        cardDealt = false; // Reset flag
+        cardDealt = false;                                                 // Reset flag
         if (!postDeal && !toolsMenuActive && !taglessGame) {               // Check if main deal round might be ending
             if (activeColor == colorLeftOfDealer && notFirstRoundOfDeal) { // Completed a round?
                 remainingRoundsToDeal--;
@@ -888,7 +889,7 @@ void handleDealingState() {
     }
 }
 
-void dealSingleCard(String customFace="") {
+void dealSingleCard() {
     static uint8_t consecutiveDeals = 0; // Static variable to track consecutive deals. In some circumstances we can deal several cards in a row, but may want to limit how many.
 
     if (currentDisplayState == LOOK_LEFT || currentDisplayState == LOOK_RIGHT) {
@@ -899,7 +900,7 @@ void dealSingleCard(String customFace="") {
     // When "chaotically dealing" in rigged games, we can deal several cards in a row, but want to avoid dealing more than three in a row (suspicious).
     if (consecutiveDeals < 3) {
         while (!cardDealt) {
-            cardDispensingActions(customFace);
+            cardDispensingActions();
             if (errorInProgress) {
                 return;
             }
@@ -927,7 +928,7 @@ void dealSingleCard(String customFace="") {
 }
 
 // This is the series of things that actually have to happen to dispense a single card.
-void cardDispensingActions(String customFace="") { 
+void cardDispensingActions() {
     unsigned long currentTime = millis();
 
     // If there's an error in progress, get us out of the dispensing function.
@@ -943,11 +944,9 @@ void cardDispensingActions(String customFace="") {
         pollCraw();  // Continuously poll the craw (card-sensing IR sensor) to see if card goes through.
         slideCard(); // If slideCard executes fully, cardDealt = true
 
-        stopScrollText();
-        if (customFace.length() == 4) {
-            displayFace(customFace.c_str());
-        } else if (currentTime - expressionStarted > expressionDuration && !handlingFlipCard) {
+        if (currentDisplayState != CUSTOM_FACE && currentTime - expressionStarted > expressionDuration && !handlingFlipCard) {
             // Display DEALR's struggling face for at least "expressionDuration" amount of time
+            stopScrollText();
             currentDisplayState = STRUGGLE;
             updateDisplay();
         }
@@ -1261,7 +1260,7 @@ void handleStandardGameDecisionsAfterFineAdjustOld() {
         }
     } else if (activeColor > 1) {
         // If we're seeing a non-red color in a non-rigged game...
-        
+
         if (!playerLeftOfDealerIdentified) // If we haven't already noted the color of the player left of the dealer, this is our chance.
         {
             playerLeftOfDealerIdentified = true;
@@ -1270,7 +1269,7 @@ void handleStandardGameDecisionsAfterFineAdjustOld() {
 
         if (currentGame == 3 && previousActiveColor != 1) {
             // If we're playing War, and we hit two non-reds in a row, we know there are too many tags. (Traditionally war only has 2 players.)
-            
+
             errorInProgress = true;
             while (!scrollingComplete) {
                 displayErrorMessage("EROR - TOO MANY TAGS");
@@ -2401,12 +2400,12 @@ void showGame() {
         } else {
             strncpy(buffer, "ERR", sizeof(buffer)); // Error getting name
         }
-    } else if (currentGame == totalGames) { 
+    } else if (currentGame == totalGames) {
         // Index points to the TOOLS option
         getProgmemString(toolsMenu[0] - 16, buffer, sizeof(buffer)); // Hacky: Need to adjust index based on how toolsMenu is structured relative to games
         // We want "*X-TOOLS" where X is totalGames + 1
         snprintf(buffer, sizeof(buffer), "*%d-TOOLS", totalGames + 1);
-    } else { 
+    } else {
         // Should not happen, but handle invalid currentGame index
         strncpy(buffer, "INV", sizeof(buffer));
     }
@@ -2726,6 +2725,10 @@ void updateDisplay() {
             if (scrollingComplete) {
                 currentDealState = TAGLESS_DEAL;
             }
+            break;
+
+        case CUSTOM_FACE:
+            displayFace(customFace);
             break;
     }
 

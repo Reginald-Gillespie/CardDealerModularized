@@ -10,7 +10,7 @@
 class GoFish : public Game {
   public:
   
-    const char *getName() const override {
+    const char *getName()  const override {
         return "GO FISH";
     }
 
@@ -31,12 +31,13 @@ class GoFish : public Game {
             currentDealState = ADVANCING;       // Change state to advancing
         } else if (buttonPin == BUTTON_PIN_2) { // Blue Button (Fish)
             // Player asks for a card
-            dispenseCards(1, "o  o");
+            displayFace("o  o");
+            dispenseCards(1);
+            restoreFace();
+
             messageLine = 0;          // Reset message line for next display update
             scrollingStarted = false; // Allow text to restart
         }
-        // Other buttons (Yellow/Red) are typically handled by the main loop (decrease/back)
-        // and won't call this function when in AWAITING_PLAYER_DECISION state.
     }
 
     void handleAwaitDecisionDisplay() override {
@@ -49,6 +50,7 @@ class GoFish : public Game {
             } else {
                 startScrollText("  GREEN = PASS  ", textStartHoldTime, textSpeedInterval, textEndHoldTime);
             }
+            messageLine++;
             scrollingStarted = true;
         }
 

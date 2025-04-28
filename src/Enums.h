@@ -16,6 +16,7 @@ enum dealState {
 
 // DISPLAY STATE: Tracks what is displayed on the 14-segment screen.
 enum displayState {
+    DISPLAY_UNSET,          // A type to signify no state saved. Used for `lastDisplayState` in the Game class
     INTRO_ANIM,             // Very first blinking animation that occurs on boot.
     SCROLL_PLACE_TAGS_TEXT, // First instructions that occur after blinking animation.
     SCROLL_PICK_GAME_TEXT,  // Animation that scrolls "PICK GAME USING BLUE/YELLOW" instructions before game selection menu.
@@ -31,7 +32,8 @@ enum displayState {
     LOOK_STRAIGHT,          // Open eyes face.
     FLIP,                   // Display state for the word "FLIP".
     TAGLESS_DISPLAY,        // Displays info on "tagless" deals, which can support >4 people.
-    SCREENSAVER             // Screensaver animation that occurs after timeoutF
+    SCREENSAVER,            // Screensaver animation that occurs after timeoutF
+    CUSTOM_FACE             // Custom displays the `customFace` string, used by the Game class 
 };
 
 // Enums to help intellisense for game modules
