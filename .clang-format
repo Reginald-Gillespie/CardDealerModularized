@@ -1,0 +1,46 @@
+BasedOnStyle: LLVM
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+
+# Brace and block styling
+BreakBeforeBraces: Attach
+AllowShortIfStatementsOnASingleLine: true
+AllowShortLoopsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: None
+AllowShortCaseLabelsOnASingleLine: true
+
+# Macro + define behavior
+AlignAfterOpenBracket: DontAlign
+AlignOperands: false
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+AlignConsecutiveMacros: false
+MacroBlockBegin: ""
+MacroBlockEnd: ""
+IndentPPDirectives: None
+
+# Column and wrapping
+ColumnLimit: 0  # disables hard wrapping, avoids those ugly \ line breaks
+BinPackParameters: false
+BinPackArguments: false
+
+# Expression spacing
+SpaceBeforeParens: ControlStatements
+SpacesInParentheses: false
+SpacesInAngles: false
+Cpp11BracedListStyle: false
+
+# Misc
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 1
+ReflowComments: false
+SortIncludes: false
+
+# Cases
+IndentCaseLabels: true
+
+# Stuffs
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowAllArgumentsOnNextLine: false
+BreakArrays: true
