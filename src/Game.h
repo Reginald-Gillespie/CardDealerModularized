@@ -54,12 +54,10 @@ class Game {
     // === Optional Methods ===
 
     // Called just before the main dealing loop starts (after initialization to red, if applicable)
-    virtual void onDealStart() {
-    }
+    virtual void onDealStart() {}
 
     // Called when the game is over (either by onMainDealEnd or other game logic)
-    virtual void onGameOver() {
-    }
+    virtual void onGameOver() {}
 
     // Called when the main deal completes (remainingRoundsToDeal reaches 0)
     // Use this to transition to post-deal logic or declare game over.
