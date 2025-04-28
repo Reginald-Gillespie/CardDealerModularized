@@ -2,36 +2,28 @@
 #define GO_FISH_GAME_H
 
 #ifndef useSerial
-    #define useSerial false
+    #define useSerial 0
 #endif
 
 #include "../Game.h" // Include base class - use relative path
 
-// --- Extern variables/functions GoFish needs ---
-// These should already be declared in Game.h or globally available
-extern uint16_t textSpeedInterval;
-extern uint16_t textStartHoldTime;
-extern uint16_t textEndHoldTime;
-
 class GoFish : public Game {
   public:
-    // --- Required Methods ---
-
+  
     const char *getName() const override {
         return "GO FISH";
     }
 
-    bool onSelect() override {
+    bool initialize() override {
         // initialRoundsToDeal = 1;
         initialRoundsToDeal = 0;
         postCardsToDeal = 127;   // Use a large number to signify 'deal until empty' logic needed later
         remainingRoundsToDeal = initialRoundsToDeal; // Second value has smth to do with rigged game handling?
 
-        return true; // Go Fish starts dealing immediately after selection
+        return GamInitResult::StartDealing;
     }
 
     void handleButtonPress(int buttonPin) override {
-        // This is called ONLY when currentDealState is AWAITING_PLAYER_DECISION
         if (buttonPin == BUTTON_PIN_1) { // Green Button (Pass)
             // Player passes, advance to the next player
             displayFace(">  >");                // Show advancing face briefly
@@ -39,12 +31,7 @@ class GoFish : public Game {
             currentDealState = ADVANCING;       // Change state to advancing
         } else if (buttonPin == BUTTON_PIN_2) { // Blue Button (Fish)
             // Player asks for a card
-            dealSingleCard("o  o");
-            cardDealt = false;        // dealSingleCard sets this true, reset for state machine logic
-                                      // Stay in AWAITING_PLAYER_DECISION for the same player? Or does Go Fish logic dictate advancing?
-                                      // For simplicity here, we assume the player might fish again or pass next.
-                                      // If fishing always ends the turn, you'd set advanceOnePlayer = true and state = ADVANCING here too.
-                                      // Let's keep it simple: stay awaiting decision from the same player after fishing.
+            dispenseCards(1, "o  o");
             messageLine = 0;          // Reset message line for next display update
             scrollingStarted = false; // Allow text to restart
         }

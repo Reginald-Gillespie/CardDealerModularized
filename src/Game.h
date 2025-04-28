@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include "Enums.h"
 #include "Definitions.h"
+#include "Config.ino"
 
 // Forward declare global objects/variables if needed, or include the main header
 extern dealState currentDealState;
@@ -31,19 +32,17 @@ void handleFlipCard(); // Example of a core function a game might trigger
 class Game {
   public:
     virtual ~Game() {
-    } // Virtual destructor is good practice for base classes
+    } // Virtual destructor
 
-    // --- Methods Subclasses MUST Implement ---
+    // === Methods Subclasses MUST Implement ===
 
     // Returns the display name of the game (e.g., "GO FISH")
-    // Should be short enough or the registry will handle scrolling.
     virtual const char *getName() const = 0;
 
     // Called when the game is selected from the menu.
     // Set initial game parameters like rounds, post-deal cards.
-    // Return true if the game should start dealing immediately after selection.
-    // Return false if further configuration (like SELECT_CARDS/PLAYERS) is needed first.
-    virtual bool onSelect() = 0;
+    // Returns a value from the GamInitResult enum
+    virtual bool initialize() = 0;
 
     // Handles button presses specifically when currentDealState is AWAITING_PLAYER_DECISION.
     // buttonPin: The pin number of the button pressed (e.g., BUTTON_PIN_1)
@@ -52,11 +51,14 @@ class Game {
     // Manages display updates (e.g., scrolling instructions) when currentDealState is AWAITING_PLAYER_DECISION.
     virtual void handleAwaitDecisionDisplay() = 0;
 
-    // --- Methods Subclasses CAN Override (Optional) ---
+    // === Optional Methods ===
 
     // Called just before the main dealing loop starts (after initialization to red, if applicable)
     virtual void onDealStart() {
-        // Default: Do nothing
+    }
+
+    // Called when the game is over (either by onMainDealEnd or other game logic)
+    virtual void onGameOver() {
     }
 
     // Called when the main deal completes (remainingRoundsToDeal reaches 0)
@@ -73,10 +75,7 @@ class Game {
         }
     }
 
-    // Called when the game is over (either by onMainDealEnd or other game logic)
-    virtual void onGameOver() {
-        // Default: Do nothing, main loop handles reset via handleGameOver()
-    }
+    // TODO: make these values instead of methods
 
     // Does this game require the user to select the number of cards per hand?
     virtual bool requiresCardSelection() const {
@@ -84,7 +83,6 @@ class Game {
     }
 
     // Does this game require the user to select the number of players (for tagless)?
-    // Note: Tagless itself isn't managed by this Game class system directly yet.
     virtual bool requiresPlayerSelection() const {
         return false; // Default: No
     }
@@ -95,15 +93,23 @@ class Game {
     }
 
   protected:
-    // Helper variables for managing scrolling text within game states
-    // Games need to manage these themselves if they use scrolling text
-    // in handleAwaitDecisionDisplay
+    // Variables
     bool scrollingStarted = false;
     uint8_t messageLine = 0;
-    uint8_t messageRepetitions = 0; // Track repetitions if needed
+    uint8_t messageRepetitions = 0; // TODO move handling of message lines into display array that is managed here...
 
-    // Games can access global functions like dealSingleCard() directly
-    // or use forward declarations if needed.
+    void dispenseCards(uint8_t amount, const String &customFace = "") {
+        for (uint8_t i = 0; i < amount; ++i) {
+            _dealSingleCard(customFace);
+        }
+    }
+
+  private:
+    // Internal wrappers
+    void _dealSingleCard(const String &customFace = "") {
+        dealSingleCard(customFace);
+        cardDealt = false;
+    }
 };
 
 #endif // GAME_H

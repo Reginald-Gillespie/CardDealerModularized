@@ -1,24 +1,8 @@
 #include <Arduino.h>
+#include "Config.ino"
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/*
-CONFIGURATION
-Some handy toggles and values pulled up to the top for ease of access.
-*/
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma region CONFIGURATION
 
-// HANDY TOGGLES AND VALUES
-bool useSerial = false;                                 // Enables serial output for debugging. Set to false to disable serial output. Some statements need manual uncommenting for memory reasons.
-bool scrollInstructions = true;                        // Enables/disables the instructions that scrikk between the initial animation and the games selection menu.
-bool motorStartRoutine = true;                         // Enables/disables each of the motors going back and forth at boot. Useful for debugging, but can be turned off to save a little energy for deals.
-uint8_t riggedColor = 1;                               // Can be used to changed the color tag that marked cards are dealt towards. RED = 1; YELLOW = 2; BLUE = 3; GREEN = 4.
-uint16_t textSpeedInterval = 160;                      // How fast do you read?? Amount of time (in ms) between frames of scrolling text (Lower number = faster text scrolling).
-uint16_t textStartHoldTime = 800;                      // Amount of time (in ms) scrolling text should pause before advancing.
-uint16_t textEndHoldTime = 800;                        // Amount of time (in ms) that scrolling text should pause at the end of a scroll.
-const unsigned long timeUntilScreensaverStart = 55000; // When this amount of time expires (in milliseconds), the intro animation starts as a screensaver.
-const unsigned long markedLEDTimeout = 600;            // The Nano's onboard LED lights up when DEALR detects a marked card. This is the number of milliseconds it lights for.
-const unsigned long expressionDuration = 500;          // DEALR makes faces when it deals cards. This value determines the amount of time it makes the face for.
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
 EDITING DEALR'S DEALING FACES
@@ -2920,7 +2904,7 @@ void advanceMenu() {
             if (currentGame < totalGames) { // A game is selected
                 currentGamePtr = gameRegistry.getGame(currentGame);
                 if (currentGamePtr) {
-                    bool startDealing = currentGamePtr->onSelect(); // Call game's setup method
+                    bool startDealing = currentGamePtr->initialize(); // Call game's setup method
 
                     if (startDealing) {
                         if (currentGamePtr->requiresCardSelection()) {
@@ -2938,7 +2922,7 @@ void advanceMenu() {
                             // currentGamePtr->onDealStart();
                         }
                     } else {
-                        // onSelect returned false, implies configuration needed
+                        // initialize returned false, implies configuration needed
                         if (currentGamePtr->requiresCardSelection()) {
                             currentDisplayState = SELECT_CARDS;
                             numCardsLocked = false;
@@ -2946,8 +2930,8 @@ void advanceMenu() {
                             currentDisplayState = SELECT_PLAYERS;
                             numPlayersLocked = false;
                         } else {
-                            // Should not happen if onSelect is false without requiring selection
-                            if (useSerial) Serial.println(F("WARN: onSelect false but no selection required?"));
+                            // Should not happen if initialize is false without requiring selection
+                            if (useSerial) Serial.println(F("WARN: initialize false but no selection required?"));
                             currentDisplayState = SELECT_GAME; // Stay here? Or error?
                         }
                     }

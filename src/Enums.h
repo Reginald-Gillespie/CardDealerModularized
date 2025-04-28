@@ -34,4 +34,21 @@ enum displayState {
     SCREENSAVER             // Screensaver animation that occurs after timeoutF
 };
 
+// Enums to help intellisense for game modules
+// struct GamInitResult {
+//     enum Value {
+//         NeedsPlayerCardInput,
+//         DealImmediately,
+//     };
+// };
+struct GamInitResult {
+    static constexpr bool StartDealing = true;
+    // These three are the same but are easier to work with and allow further refarctoring down the road
+    static constexpr bool SelectPlayer = false;
+    static constexpr bool SelectCards = false;
+    static constexpr bool SelectPlayerAndCards = false;
+};
+
+
+
 #endif // SHARED_ENUMS_H
