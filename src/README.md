@@ -1,3 +1,7 @@
+This folder contains source code.
+
+CrunchLabs README:
+```
 Card Dealing Robot Stock Code
 02.24.2025
 Version: 2.4.5
@@ -9,3 +13,4 @@ Author: Crunchlabs LLC
   For more info and to access the hacks, visit the Crunchlabs IDE. For community updates, 
   check out our Discord server. For help making your own hacks, ask our very own Mark Robot 
   on the IDE!
+```
