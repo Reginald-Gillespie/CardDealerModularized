@@ -25,10 +25,8 @@ class GoFish : public Game {
 
     void handleButtonPress(int buttonPin) override {
         if (buttonPin == BUTTON_PIN_1) { // Green Button (Pass)
-            // Player passes, advance to the next player
-            displayFace(">  >");                // Show advancing face briefly
-            advanceOnePlayer = true;            // Signal core logic to advance one player
-            currentDealState = ADVANCING;       // Change state to advancing
+            nextPlayersTurn();
+
         } else if (buttonPin == BUTTON_PIN_2) { // Blue Button (Fish)
             // Player asks for a card
             displayFace("o  o");

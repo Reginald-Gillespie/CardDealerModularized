@@ -122,6 +122,13 @@ class Game {
         lastDisplayState = DISPLAY_UNSET;
     }
 
+    // Player passes, advance to the next player
+    void nextPlayersTurn() {
+        // TODO: add support for moving multiple people forwards
+        advanceOnePlayer = true;            // Signal core logic to advance one player
+        currentDealState = ADVANCING;       // Change state to advancing
+    }
+
   private:
     // Internal wrappers
     void _dealSingleCard() {
