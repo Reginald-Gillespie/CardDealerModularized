@@ -174,39 +174,10 @@ NHY3274TH is a custom color sensor that uses a custom library.
 #include "Enums.h"
 #include "Game.h"
 #include "GameRegistry.h"
+#include "Definitions.h"
 
 #pragma endregion LIBRARIES
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/*
-PIN ASSIGNMENTS
-*/
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma region PIN ASSIGNMENTS
 
-// MOTOR PINS
-#define MOTOR_1_PIN_1 9 // Motor 1 pins control the card-throwing flywheel direction.
-#define MOTOR_1_PIN_2 10
-#define MOTOR_1_PWM 11  // Motor 1 PWM controls the speed of the flywheel.
-#define MOTOR_2_PWM 5   // Motor 2 PWM controls the speed of rotation for the (yaw) motor.
-#define MOTOR_2_PIN_2 6 // Motor 2 pins control the yaw motor direction.
-#define MOTOR_2_PIN_1 7
-#define FEED_SERVO_PIN 3 // This pin controls the card feeding servo motor.
-
-// BUTTON PINS
-#define BUTTON_PIN_4 14 // Button 4 ("Back").
-#define BUTTON_PIN_3 15 // Button 3 ("Decrease").
-#define BUTTON_PIN_2 16 // Button 2 ("Increase/Hit").
-#define BUTTON_PIN_1 17 // Button 1 ("Advance/Pass").
-#define RIG_SWITCH A6   // Switch to toggle rigged game vs non-rigged game.
-
-// SENSOR PINS
-#define CARD_SENS 2  // IR sensor that determines whether or not a card has passed through the mouth of DEALR.
-#define UV_READER A7 // Sensor for reading the reflectance of the UV ink on marked cards.
-
-// OTHER PINS
-#define STNDBY 8 // Standby needs to be pulled HIGH. This can be done with a wire to 5V as well.
-
-#pragma endregion PIN ASSIGNMENTS
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
 LIBRARY OBJECT ASSIGNMENTS:
@@ -514,8 +485,8 @@ void handleToolsDealing();                         // This is where we handle de
 void handleToolsAdvancingDecisions();              // This is where we decide which direction to advance in during DEALR's "tools" subroutines
 
 // Functions related to dealing cards
-void dealSingleCard();        // Safe wrapper function for cardDispensingActions. Includes some pre- and post-processing steps.
-void cardDispensingActions(); // The series of actions that deal a single card.
+void dealSingleCard(String customFace="");        // Safe wrapper function for cardDispensingActions. Includes some pre- and post-processing steps.
+void cardDispensingActions(String customFace=""); // The series of actions that deal a single card.
 void prepareForDeal();        // The steps that get us ready to deal a single card.
 
 // Functions related to DEALR rotation and color sensing
@@ -933,7 +904,7 @@ void handleDealingState() {
     }
 }
 
-void dealSingleCard() {
+void dealSingleCard(String customFace="") {
     static uint8_t consecutiveDeals = 0; // Static variable to track consecutive deals. In some circumstances we can deal several cards in a row, but may want to limit how many.
 
     if (currentDisplayState == LOOK_LEFT || currentDisplayState == LOOK_RIGHT) {
@@ -941,10 +912,10 @@ void dealSingleCard() {
         updateDisplay();
     }
 
-    if (consecutiveDeals < 3) // When "chaotically dealing" in rigged games, we can deal several cards in a row, but want to avoid dealing more than three in a row (suspicious).
-    {
+    // When "chaotically dealing" in rigged games, we can deal several cards in a row, but want to avoid dealing more than three in a row (suspicious).
+    if (consecutiveDeals < 3) {
         while (!cardDealt) {
-            cardDispensingActions();
+            cardDispensingActions(customFace);
             if (errorInProgress) {
                 return;
             }
@@ -953,11 +924,13 @@ void dealSingleCard() {
         if (riggedGame && !taglessGame && !toolsMenuActive) {
             colorStatus[activeColor - 1]++;
             totalCardsToDeal--;
+
             // printDealtCardsInfo();
             //  Serial.print(F("totalCardsToDeal = "));
             //  Serial.println(totalCardsToDeal);
-            if (totalCardsToDeal <= 0) // If we have no more cards to deal in the main deal, move on to post-deal (in games that have post-deal sections).
-            {
+
+            // If we have no more cards to deal in the main deal, move on to post-deal (in games that have post-deal sections).
+            if (totalCardsToDeal <= 0) {
                 postDeal = true;
             }
         }
@@ -969,25 +942,28 @@ void dealSingleCard() {
     }
 }
 
-void cardDispensingActions() // This is the series of things that actually have to happen to dispense a single cards.
-{
+// This is the series of things that actually have to happen to dispense a single card.
+void cardDispensingActions(String customFace="") { 
     unsigned long currentTime = millis();
 
-    if (errorInProgress) // If there's an error in progress, get us out of the dispensing function.
-    {
+    // If there's an error in progress, get us out of the dispensing function.
+    if (errorInProgress) {
         // Serial.println("Error in progress!");
         return;
     }
 
-    if (!throwingCard) // If we're not yet throwing a card, fire up the motors that allow us to throw a card.
-    {
+    // If we're not yet throwing a card, fire up the motors that allow us to throw a card.
+    if (!throwingCard) {
         prepareForDeal();
     } else {
         pollCraw();  // Continuously poll the craw (card-sensing IR sensor) to see if card goes through.
-        slideCard(); // If slieCard executes fully, cardDealt = true
+        slideCard(); // If slideCard executes fully, cardDealt = true
 
-        if (currentTime - expressionStarted > expressionDuration && !handlingFlipCard) // Display DEALR's struggling face for at least "expressionDuration" amount of time
-        {
+        stopScrollText();
+        if (customFace.length() == 4) {
+            displayFace(customFace.c_str());
+        } else if (currentTime - expressionStarted > expressionDuration && !handlingFlipCard) {
+            // Display DEALR's struggling face for at least "expressionDuration" amount of time
             currentDisplayState = STRUGGLE;
             updateDisplay();
         }
@@ -996,8 +972,8 @@ void cardDispensingActions() // This is the series of things that actually have 
     handleThrowingTimeout(currentTime); // If we're trying to throw a card but too much time elapses, throw an error and exit to a main menu.
 }
 
-void prepareForDeal() // Turns on the flywheel.
-{
+// Turns on the flywheel.
+void prepareForDeal() {
     unsigned long currentTime = millis();
 
     throwingCard = true; // Set throwingCard tag to "true".
@@ -2614,8 +2590,8 @@ void scrollMenuText(const char *text) // Helper function that receives text from
     updateScrollText();
 }
 
-void updateDisplay() // A catch-all display-updating switch-case that controls what should be displayed on the 14-segment timer when called.
-{
+// A catch-all display-updating switch-case that controls what should be displayed on the 14-segment timer when called.
+void updateDisplay() {
     if (currentDisplayState != previousDisplayState) {
         scrollingStarted = false;
         scrollingComplete = false;

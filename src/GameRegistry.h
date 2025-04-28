@@ -4,21 +4,23 @@
 #include <Arduino.h>
 #include <Game.h>
 
+#define MAX_GAMES 10
+
 // ===> Add Game Imports <===
 #include <games/GoFish.h> // Include all games here
 // ==========================
 
-#define MAX_GAMES 10
 
 class GameRegistry {
   private:
+    // ===> Add Game Instances <===
+    GoFish goFishGame;
+    // ==========================
+
     Game *games[MAX_GAMES];
     uint8_t gameCount;
     char formattedNameBuffer[20];
 
-    // ===> Add Game Instances <===
-    GoFish goFishGame;
-    // ==========================
 
   public:
     GameRegistry()

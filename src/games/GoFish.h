@@ -12,14 +12,6 @@
 extern uint16_t textSpeedInterval;
 extern uint16_t textStartHoldTime;
 extern uint16_t textEndHoldTime;
-extern const unsigned long timeUntilScreensaverStart; // Example if needed
-extern const unsigned long expressionDuration;        // Example if needed
-
-// Button Pins (ensure these defines are accessible)
-#define BUTTON_PIN_1 17
-#define BUTTON_PIN_2 16
-// #define BUTTON_PIN_3 15 // Not used by GoFish AwaitDecision
-// #define BUTTON_PIN_4 14 // Back button handled by main loop
 
 class GoFish : public Game {
   public:
@@ -30,7 +22,8 @@ class GoFish : public Game {
     }
 
     bool onSelect() override {
-        initialRoundsToDeal = 1;
+        // initialRoundsToDeal = 1;
+        initialRoundsToDeal = 0;
         postCardsToDeal = 127;   // Use a large number to signify 'deal until empty' logic needed later
         remainingRoundsToDeal = initialRoundsToDeal; // Second value has smth to do with rigged game handling?
 
@@ -41,15 +34,12 @@ class GoFish : public Game {
         // This is called ONLY when currentDealState is AWAITING_PLAYER_DECISION
         if (buttonPin == BUTTON_PIN_1) { // Green Button (Pass)
             // Player passes, advance to the next player
-            stopScrollText();                   // Stop any scrolling text
             displayFace(">  >");                // Show advancing face briefly
             advanceOnePlayer = true;            // Signal core logic to advance one player
             currentDealState = ADVANCING;       // Change state to advancing
         } else if (buttonPin == BUTTON_PIN_2) { // Blue Button (Fish)
             // Player asks for a card
-            stopScrollText();    // Stop any scrolling text
-            displayFace("o  o"); // Show dealing face briefly
-            dealSingleCard();
+            dealSingleCard("o  o");
             cardDealt = false;        // dealSingleCard sets this true, reset for state machine logic
                                       // Stay in AWAITING_PLAYER_DECISION for the same player? Or does Go Fish logic dictate advancing?
                                       // For simplicity here, we assume the player might fish again or pass next.

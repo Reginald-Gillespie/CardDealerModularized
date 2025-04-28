@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 #include "Enums.h"
-
+#include "Definitions.h"
 
 // Forward declare global objects/variables if needed, or include the main header
 extern dealState currentDealState;
@@ -17,7 +17,7 @@ extern bool gameOver;
 extern bool advanceOnePlayer;
 
 // Forward declare core functions games might need
-void dealSingleCard();
+void dealSingleCard(String customFace = "");
 void advanceMenu(); // Although games shouldn't typically call this directly
 void displayFace(const char *word);
 void startScrollText(const char *text, uint16_t start, uint16_t delay, uint16_t end);
