@@ -109,35 +109,15 @@ const unsigned long evilScreensaveIntervals[] = {
 const DisplayAnimation evilScreensaverBlinking = { evilScreensaveFrames, evilScreensaveIntervals, ARRAY_SIZE(evilScreensaveFrames) };
 
 #pragma endregion CONFIGURATION
+
 #pragma region LICENSE
-
-/*
-  ************************************************************************************
-  * MIT License
-  *
-  * Copyright (c) 2024 Crunchlabs LLC (DEALR Code)
-
-  * Permission is hereby granted, free of charge, to any person obtaining a copy
-  * of this software and associated documentation files (the "Software"), to deal
-  * in the Software without restriction, including without limitation the rights
-  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-  * copies of the Software, and to permit persons to whom the Software is furnished
-  * to do so, subject to the following conditions:
-  *
-  * The above copyright notice and this permission notice shall be included in all
-  * copies or substantial portions of the Software.
-  *
-  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-  * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-  * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-  * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
-  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
-  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-  *
-  ************************************************************************************
-*/
-
+// SPDX-License-Identifier: MIT
+// Original code © 2024 Crunchlabs LLC (DEALR Code)
+// Refactored April 2025 by WKoA
+// See LICENSE.txt for full original license text.
 #pragma endregion LICENSE
+
+#pragma region LIBRARIES
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
 INCLUDED LIBRARIES
@@ -145,7 +125,6 @@ All the below, with the exception of NHY3274TH.h, are common external libraries.
 NHY3274TH is a custom color sensor that uses a custom library.
 */
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma region LIBRARIES
 
 #include <Servo.h>                // Controls the card-feeding servo.
 #include <Wire.h>                 // Enables I2C, which we use for communicating with the 14-segment LED display.
@@ -162,27 +141,21 @@ NHY3274TH is a custom color sensor that uses a custom library.
 
 #pragma endregion LIBRARIES
 
+#pragma region LIB OBJECTS
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
 LIBRARY OBJECT ASSIGNMENTS:
 Initialize objects for external libraries.
 */
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma region LIB OBJECTS
 
 Servo feedCard;                                    // Instantiate a Servo object called "feedCard" for controlling a servo motor.
 NHY3274TH sensor;                                  // Instantiate an NHY3274TH object called "sensor" for interfacing with the NHY3274TH color sensor.
 Adafruit_AlphaNum4 display = Adafruit_AlphaNum4(); // Instantiate an Adafruit_AlphaNum4 object called "display" for controlling the 14-segment display.
 
 #pragma endregion LIB OBJECTS
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/*
-ENUMERATIONS:
-Convenient data types for managing DEALR's state machine and animations.
-*/
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma region ENUMERATIONS
 
+#pragma region ENUMERATIONS
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
 ANIMATIONS:
@@ -195,13 +168,14 @@ uint8_t currentFrameIndex = 0;
 unsigned long lastFrameTime = 0;
 
 #pragma endregion ENUMERATIONS
+
+#pragma region CONSTANTS
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
 CONSTANTS:
 Fixed values such as motor speeds, timeouts, and default thresholds.
 */
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma region CONSTANTS
 
 // EEPROM VARIABLES
 // These variables store the memory addresses of any information that needs to be saved through system reboots
@@ -266,12 +240,13 @@ const unsigned long riggedCheckInterval = 2000; // How often we poll the rig swi
 const unsigned long min360Interval = 1000;      // This variable ensures there's no chance of double-reading the red tag while initializing a tagless deal.
 
 #pragma endregion CONSTANTS
+
+#pragma region GLOBAL VARIABLES
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
 GLOBAL VARIABLES
 */
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma region GLOBAL VARIABLES
 
 // GAMEPLAY VARIABLES
 int8_t currentGame = 0;            // Variable for holding the current game being selected.
@@ -362,6 +337,8 @@ int8_t colorStatus[maxTagColors] = { -1, -1, -1, -1 }; // -1 means color not see
 int8_t colorLeftOfDealer = 0;                          // To store the color index number for the player left of the dealer, which can change each game.
 
 #pragma endregion GLOBAL VARIABLES
+
+#pragma region STATE MACHINE FLAGS
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
 STATE MACHINE FLAGS:
@@ -373,7 +350,6 @@ whether or not a deal has been initialized, or whether or not we are checking fo
 to check, but using bools is an easy way to both set and check different dealing conditions on the fly.
 */
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma region STATE MACHINE FLAGS
 
 GameRegistry gameRegistry;
 Game* currentGamePtr = nullptr;
@@ -434,6 +410,8 @@ bool taglessGame = false;           // Flag for indicating whether or not it wil
 bool communityCards = false;        // Indicates whether or not the game has "community cards"
 
 #pragma endregion STATE MACHINE FLAGS
+
+#pragma region FUNCTION PROTOTYPES
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
 FUNCTION PROTOTYPES
@@ -441,7 +419,6 @@ Function Prototypes let a program know what functions are going to be defined la
 can serve as a kind of table of contents for what to expect later.
 */
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma region FUNCTION PROTOTYPES
 
 // Setup Functions
 void startRoutine(); // Routine that runs in "setup". Includes motor test and initial blink animation.
@@ -579,13 +556,14 @@ void printDealtCardsInfo();    // Helper function for printing information on wh
 void printStoredUVThreshold(); // Helper function for printing the stored UV threshold for determining when a card has been marked.
 
 #pragma endregion FUNCTION PROTOTYPES
+
+#pragma region SETUP
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
 SETUP FUNCTION
 In the setup for this build, we make sure our sensors are working and run a few startup routines.
 */
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma region SETUP
 
 void setup() {
     if (useSerial) {
@@ -711,6 +689,7 @@ void setup() {
 }
 
 #pragma endregion SETUP
+
 #pragma region LOOP
 
 // MAIN LOOP
@@ -721,6 +700,7 @@ void loop() {
 }
 
 #pragma endregion LOOP
+
 #pragma region FUNCTIONS
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3979,7 +3959,3 @@ void printStoredUVThreshold() // Helper function for printing the stored UV thre
 }
 #pragma endregion Serial Monitor
 #pragma endregion FUNCTIONS
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////
-//END CODE
-//////////////////////////////////////////////////////////////////////////////////////////////////////////
