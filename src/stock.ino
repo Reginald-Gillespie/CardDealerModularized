@@ -11,19 +11,19 @@ face must be exactly four characters long, including spaces.
 */
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-const char *EFFORT = "X  X";     // The face DEALR makes in unrigged games while dealing a card
-const char *MONEY = "$  $";      // The face DEALR makes in rigged games while dealing a marked card
-const char *LOOK_SMALL = "o  o"; // The face DEALR makes in unrigged games while dealing an unmarked card
-const char *LEFT = ">  >";       // The face DEALR makes when rotating clockwise
-const char *RIGHT = "<  <";      // The face DEALR makes when rotating counter-clockwise
-const char *LOOK_BIG = "O  O";   // The face DEALR makes right before dealing a card in a regular game
-const char *WILD = "@  @";       // The face DEALR makes right before dealing a marked card in a rigged game
-const char *SNEAKY = "=  =";     // The face DEALR makes right before dealing an unmarked card in a rigged game
+const char* EFFORT = "X  X";     // The face DEALR makes in unrigged games while dealing a card
+const char* MONEY = "$  $";      // The face DEALR makes in rigged games while dealing a marked card
+const char* LOOK_SMALL = "o  o"; // The face DEALR makes in unrigged games while dealing an unmarked card
+const char* LEFT = ">  >";       // The face DEALR makes when rotating clockwise
+const char* RIGHT = "<  <";      // The face DEALR makes when rotating counter-clockwise
+const char* LOOK_BIG = "O  O";   // The face DEALR makes right before dealing a card in a regular game
+const char* WILD = "@  @";       // The face DEALR makes right before dealing a marked card in a rigged game
+const char* SNEAKY = "=  =";     // The face DEALR makes right before dealing an unmarked card in a rigged game
 
 struct DisplayAnimation // This little block has to come before the animation definitions, which let you change the faces DEALR makes.
 {
-    const char **frames;            // Pointer to array of frames
-    const unsigned long *intervals; // Pointer to array of timing intervals
+    const char** frames;            // Pointer to array of frames
+    const unsigned long* intervals; // Pointer to array of timing intervals
     uint8_t numFrames;              // Number of frames in the animation
 };
 
@@ -46,7 +46,7 @@ You can create new animations and call them in the script, but if you're just ge
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Initial blinking animation
-const char *introFrames[] = {
+const char* introFrames[] = {
     "O  O", // Frame 1
     "-  -", // Frame 2
     "O  O", // Frame 3
@@ -63,7 +63,7 @@ const unsigned long introIntervals[] = {
 const DisplayAnimation initialBlinking = { introFrames, introIntervals, ARRAY_SIZE(introFrames) };
 
 // Screensaver blinking animation
-const char *screensaveFrames[] = {
+const char* screensaveFrames[] = {
     "O  O", // Frame 1
     "-  -", // Frame 2
     "O  O", // Frame 3
@@ -86,7 +86,7 @@ const unsigned long screensaveIntervals[] = {
 const DisplayAnimation screensaverBlinking = { screensaveFrames, screensaveIntervals, ARRAY_SIZE(screensaveFrames) };
 
 // Cheating blinking animation
-const char *evilScreensaveFrames[] = {
+const char* evilScreensaveFrames[] = {
     "$  $", // Frame 1
     "-  -", // Frame 2
     "$  $", // Frame 3
@@ -190,7 +190,7 @@ The "DisplayAnimation" struct allows for new animations to be made more easily.
 */
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-const DisplayAnimation *currentAnimation = &initialBlinking;
+const DisplayAnimation* currentAnimation = &initialBlinking;
 uint8_t currentFrameIndex = 0;
 unsigned long lastFrameTime = 0;
 
@@ -376,7 +376,7 @@ to check, but using bools is an easy way to both set and check different dealing
 #pragma region STATE MACHINE FLAGS
 
 GameRegistry gameRegistry;
-Game *currentGamePtr = nullptr;
+Game* currentGamePtr = nullptr;
 
 bool rotatingCW = false;                   // Indicates clockwise rotation.
 bool rotatingCCW = false;                  // Indicates counter-clockwise rotation.
@@ -472,7 +472,7 @@ void handleToolsAdvancingDecisions();              // This is where we decide wh
 // Functions related to dealing cards
 void dealSingleCard();        // Safe wrapper function for cardDispensingActions. Includes some pre- and post-processing steps.
 void cardDispensingActions(); // The series of actions that deal a single card.
-void prepareForDeal();                              // The steps that get us ready to deal a single card.
+void prepareForDeal();        // The steps that get us ready to deal a single card.
 
 // Functions related to DEALR rotation and color sensing
 void initializeToRed();                                      // Function for initializing to the red tag before a deal.
@@ -490,7 +490,7 @@ void handleGameOver(); // Handles when "game over" has been declared by initiati
 void dealTagless();    // Handles "tagless deals", where we use only the red tag for homing, but can deal to any number of players
 
 // Buttons and Other Sensor Function Prototypes
-void checkButton(int buttonPin, unsigned long &lastPress, int &lastButtonState, unsigned long &pressTime, bool &longPressFlag, uint16_t longPressDuration, void (*onRelease)(), void (*onLongPress)());
+void checkButton(int buttonPin, unsigned long& lastPress, int& lastButtonState, unsigned long& pressTime, bool& longPressFlag, uint16_t longPressDuration, void (*onRelease)(), void (*onLongPress)());
 void checkButtons();                    // Wrapper function for checkButton. Checks whether or not buttons have been pressed.
 void onButton1Release();                // Function for isolating when button one is released.
 void onButton1LongPress();              // Function for isolating when button one is long-pressed.
@@ -516,18 +516,18 @@ void showTool();                                       // Function for writing t
 void showCards();                                      // Function for producing the card-number selection menu in games where a user must select number of cards per person.
 void showPlayers();                                    // Function for producing the card-number selection menu in games where a user must select number of players playing.
 void startPreGameAnimation();                          // Starts the pre-game animation, which transitions into the blinking animation.
-void startScrollText(const char *text, uint16_t start, // Starts scrolling text. Inputs are: text to scroll, length of time to hold while starting...
+void startScrollText(const char* text, uint16_t start, // Starts scrolling text. Inputs are: text to scroll, length of time to hold while starting...
     uint16_t delay,
     uint16_t end);                                          // ...scroll frame delay time, and length of time to hold while ending.
 void updateScrollText();                                    // Updates scrolling text as we loop.
 void stopScrollText();                                      // Interrupts and stops text from scrolling
-void displayFace(const char *word);                         // Function for showing a single four-character word (or image) on the display.
-void scrollMenuText(const char *text);                      // Helper function that receives text from "showGame()" and "showTool()."
+void displayFace(const char* word);                         // Function for showing a single four-character word (or image) on the display.
+void scrollMenuText(const char* text);                      // Helper function that receives text from "showGame()" and "showTool()."
 void updateDisplay();                                       // Function that's called when we want to update the display.
-void displayErrorMessage(const char *message);              // Displays an error message, then attempts to reset DEALR.
-void getProgmemString(const char *progmemStr, char *buffer, // Helper function for progmem.
+void displayErrorMessage(const char* message);              // Displays an error message, then attempts to reset DEALR.
+void getProgmemString(const char* progmemStr, char* buffer, // Helper function for progmem.
     size_t bufferSize);
-void runAnimation(const DisplayAnimation &animation);
+void runAnimation(const DisplayAnimation& animation);
 
 // UI Manipulation Function Prototypes
 void advanceMenu();     // Function for progressing when Button 1 (green) has been pressed.
@@ -569,7 +569,7 @@ bool allSeenColorsFull();                           // Returns "true" if all sca
 void initializeEEPROM();                                 // Function for checking whether EEPROM values were set by the user or are factory defaults.
 void writeColorToEEPROM(int index, RGBColor color);      // Used for writing RGB values to EEPROM.
 void loadColorsFromEEPROM();                             // Whatever colors have been saved to EEPROM get loaded at startup using this function.
-void loadStoredUVValueFromEEPROM(uint16_t &uvThreshold); // Loads stored UV threshold values from EEPROM on boot.
+void loadStoredUVValueFromEEPROM(uint16_t& uvThreshold); // Loads stored UV threshold values from EEPROM on boot.
 RGBColor readColorFromEEPROM(int index);                 // Helper function used in loadColorsFromEEPROM.
 RGBColor getBlackColorFromEEPROM();                      // Lets us check the value of our "baseline" luminance when no tag visible.
 
@@ -588,10 +588,10 @@ In the setup for this build, we make sure our sensors are working and run a few 
 #pragma region SETUP
 
 void setup() {
-    if (useSerial) {
-        Serial.begin(115200);
-        Serial.println(F("Beginning HP_DEALR_2_2_4 02/2025"));
-    }
+    // if (useSerial) {
+    Serial.begin(115200);
+    Serial.println(F("Beginning HP_DEALR_2_2_4 02/2025"));
+    // }
 
     if (useSerial) {
         Serial.print(F("Registered games: "));
@@ -1894,7 +1894,7 @@ BUTTONS AND SENSOR-HANDLING FUNCTIONS
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma region Buttons and Sensors
 
-void checkButton(int buttonPin, unsigned long &lastPress, int &lastButtonState, unsigned long &pressTime, bool &longPressFlag, uint16_t longPressDuration, void (*onRelease)(), void (*onLongPress)()) // This demanding function handles everything related to button-pushing in DEALR.
+void checkButton(int buttonPin, unsigned long& lastPress, int& lastButtonState, unsigned long& pressTime, bool& longPressFlag, uint16_t longPressDuration, void (*onRelease)(), void (*onLongPress)()) // This demanding function handles everything related to button-pushing in DEALR.
 {
     int currentButtonState = digitalRead(buttonPin); // Read the current button state.
 
@@ -2393,7 +2393,7 @@ void showGame() {
     display.clear();
 
     if (currentGame < totalGames) { // Index points to a registered game
-        const char *gameName = gameRegistry.getFormattedName(currentGame);
+        const char* gameName = gameRegistry.getFormattedName(currentGame);
         if (gameName) {
             strncpy(buffer, gameName, sizeof(buffer) - 1);
             buffer[sizeof(buffer) - 1] = '\0'; // Ensure null termination
@@ -2477,7 +2477,7 @@ void startPreGameAnimation() // Starts the pre-game animation, which transitions
     }
 }
 
-void startScrollText(const char *text, uint16_t start, uint16_t delay, uint16_t end) // Starts scrolling text. Inputs are: text to scroll, length of time to hold while starting, scroll frame delay time, and length of time to hold while ending.
+void startScrollText(const char* text, uint16_t start, uint16_t delay, uint16_t end) // Starts scrolling text. Inputs are: text to scroll, length of time to hold while starting, scroll frame delay time, and length of time to hold while ending.
 {
     strncpy(message, text, sizeof(message) - 1);
     message[sizeof(message) - 1] = '\0';
@@ -2499,7 +2499,7 @@ void updateScrollText() // Updates scrolling text as we loop.
 
     unsigned long currentTime = millis(); // Update time
 
-    // Check if it's time to update the display
+    // Only shift the scroll position after scrollDelayTime
     if (currentTime - lastScrollTime >= scrollDelayTime) {
         lastScrollTime = currentTime; // Update the last scroll time
         if (scrollIndex == -1) {
@@ -2552,7 +2552,7 @@ void stopScrollText() {
     scrollIndex = -1; // Reset the scroll index
 }
 
-void displayFace(const char *word) // Displays a single 4-letter word.
+void displayFace(const char* word) // Displays a single 4-letter word.
 {
     display.clear();
     for (uint8_t i = 0; i < 4; i++) {
@@ -2564,7 +2564,7 @@ void displayFace(const char *word) // Displays a single 4-letter word.
     display.writeDisplay();
 }
 
-void scrollMenuText(const char *text) // Helper function that receives text from "showGame()" and "showTool()"
+void scrollMenuText(const char* text) // Helper function that receives text from "showGame()" and "showTool()"
 {
     if (!scrollingMenu) {
         startScrollText(text, 1000, textSpeedInterval, 1000);
@@ -2737,7 +2737,7 @@ void updateDisplay() {
     }
 }
 
-void displayErrorMessage(const char *message) // Displays an error message, then resets DEALR.
+void displayErrorMessage(const char* message) // Displays an error message, then resets DEALR.
 {
     if (!scrollingStarted) {
         scrollingStarted = true;
@@ -2753,17 +2753,17 @@ void displayErrorMessage(const char *message) // Displays an error message, then
     updateDisplay();
 }
 
-void getProgmemString(const char *progmemStr, char *buffer, size_t bufferSize) // Helper function for getting strings to store in progmem.
+void getProgmemString(const char* progmemStr, char* buffer, size_t bufferSize) // Helper function for getting strings to store in progmem.
 {
     strncpy_P(buffer, progmemStr, bufferSize - 1);
     buffer[bufferSize - 1] = '\0'; // Ensure null-terminated
 }
 
-void runAnimation(const DisplayAnimation &animation) {
+void runAnimation(const DisplayAnimation& animation) {
     unsigned long currentTime = millis();
     static unsigned long lastAnimationTime = 0;
     static uint8_t currentFrame = 0;
-    static const DisplayAnimation *lastAnimation = nullptr;
+    static const DisplayAnimation* lastAnimation = nullptr;
     static uint8_t lastDisplayedFrame = 255; // Track last displayed frame
 
     if (lastAnimation != &animation) // If switching animations, reset frame tracking
@@ -2836,13 +2836,11 @@ void handleAwaitingPlayerDecision() {
     if (currentGamePtr) {
         currentGamePtr->handleAwaitDecisionDisplay();
     } else if (taglessGame && postDeal) {
-        // Handle tagless post-deal await decision display separately if needed
-        // (Your original code didn't have specific display here, handled in state logic)
-        displayFace("?"); // Placeholder? Or reuse scrolling?
+        // Not sure what if anything is supposed to go here
+        displayFace("?");
     } else {
-        // No game active or unhandled state?
-        displayFace("WAIT"); // Default waiting face
-        if (useSerial) Serial.println(F("WARN: Awaiting decision with no active game pointer?"));
+        // This should never be hit
+        displayFace("?");
     }
 }
 #pragma endregion 14 - Segment Display
@@ -3369,7 +3367,7 @@ void colorTuner() // Controls the "color tuning" operation that locks down RGB v
     }
 
     int messageCounter = 0;
-    const char *messages[] = {
+    const char* messages[] = {
         "REMOVE TAGS.",
         "REPLACE UNDER SENSOR WHEN PROMPTED.",
         "TO CONFIRM, PRESS GREEN   ^"
@@ -3421,7 +3419,7 @@ void colorTuner() // Controls the "color tuning" operation that locks down RGB v
 
 void recordColors(int startIndex) // This function scans, records, and saves color values to EEPROM for colorTuner().
 {
-    const char *colorNames[numColors] = { "BLAK", "RED ", "YELO", "BLUE", "GREE" };
+    const char* colorNames[numColors] = { "BLAK", "RED ", "YELO", "BLUE", "GREE" };
     unsigned long lastDebounceTime = 0;
     const unsigned long debounceDelay = 50; // 50ms debounce delay
     toolsMenuActive = false;
@@ -3505,7 +3503,7 @@ void uvSensorTuner() // Controls the "uv tuning" operation that locks down the t
     }
 
     int messageCounter = 0;
-    const char *messages[] = {
+    const char* messages[] = {
         "STACK 10 UNMARKED CARDS IN DEALR.", // We only scan 5 cards, but if only 5 cards are in the hopper, we risk getting UV bleed around the edge of the last card. So we ask the user to stack a few extra.
         "PRESS GREEN TO START    ^"
     };
@@ -3902,7 +3900,7 @@ void loadColorsFromEEPROM() // Whatever colors have been saved to EEPROM get loa
     }
 }
 
-void loadStoredUVValueFromEEPROM(uint16_t &uvThreshold) // Loads stored UV threshold values from EEPROM on boot.
+void loadStoredUVValueFromEEPROM(uint16_t& uvThreshold) // Loads stored UV threshold values from EEPROM on boot.
 {
     EEPROM.get(UV_THRESHOLD_ADDR, uvThreshold);
 }
@@ -3930,7 +3928,7 @@ HELPER FUNCTIONS FOR PRINTING TO SERIAL MONITOR
 void printStoredColors() // Prints RGB values for the colors that are stored (Default are Black, Red, Yellow, Green, and Blue).
 
 {
-    const char *colorNames[numColors] = { "BLAK", "RED ", "YELO", "BLUE", "GREE" };
+    const char* colorNames[numColors] = { "BLAK", "RED ", "YELO", "BLUE", "GREE" };
     for (int i = 0; i < numColors; i++) {
         RGBColor color = colors[i];
         Serial.print(colorNames[i]);

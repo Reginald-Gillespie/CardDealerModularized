@@ -10,17 +10,15 @@
 #include <games/GoFish.h> // Include all games here
 // ==========================
 
-
 class GameRegistry {
   private:
     // ===> Add Game Instances <===
     GoFish goFishGame;
     // ==========================
 
-    Game *games[MAX_GAMES];
+    Game* games[MAX_GAMES];
     uint8_t gameCount;
     char formattedNameBuffer[20];
-
 
   public:
     GameRegistry()
@@ -37,7 +35,7 @@ class GameRegistry {
         // ==========================
     }
 
-    bool addGame(Game *game) {
+    bool addGame(Game* game) {
         if (gameCount < MAX_GAMES && game != nullptr) {
             games[gameCount++] = game;
             return true;
@@ -52,15 +50,15 @@ class GameRegistry {
         return gameCount;
     }
 
-    Game *getGame(uint8_t index) const {
+    Game* getGame(uint8_t index) const {
         if (index < gameCount) {
             return games[index];
         }
         return nullptr;
     }
 
-    const char *getFormattedName(uint8_t index) {
-        Game *game = getGame(index);
+    const char* getFormattedName(uint8_t index) {
+        Game* game = getGame(index);
         if (game) {
             snprintf(formattedNameBuffer, sizeof(formattedNameBuffer), "%d-%s", index + 1, game->getName());
             return formattedNameBuffer;

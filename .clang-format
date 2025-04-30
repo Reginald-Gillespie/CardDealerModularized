@@ -44,3 +44,6 @@ IndentCaseLabels: true
 AllowAllParametersOfDeclarationOnNextLine: false
 AllowAllArgumentsOnNextLine: false
 BreakArrays: true
+
+# Type format
+PointerAlignment: Left

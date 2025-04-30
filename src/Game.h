@@ -17,13 +17,13 @@ extern bool cardDealt; // To reset after manual deal
 extern bool gameOver;
 extern bool advanceOnePlayer;
 extern const char* customFace;
-
+extern uint8_t messageRepetitions;
 
 // Forward declare core functions games might need
 void dealSingleCard();
 void advanceMenu(); // Although games shouldn't typically call this directly
-void displayFace(const char *word);
-void startScrollText(const char *text, uint16_t start, uint16_t delay, uint16_t end);
+void displayFace(const char* word);
+void startScrollText(const char* text, uint16_t start, uint16_t delay, uint16_t end);
 void updateScrollText();
 void updateDisplay();
 void stopScrollText();
@@ -34,13 +34,23 @@ void handleFlipCard(); // Example of a core function a game might trigger
 // Base class for all games
 class Game {
   public:
-    virtual ~Game() {
-    } // Virtual destructor
+    virtual ~Game() {}
 
-    // === Methods Subclasses MUST Implement ===
+    // ===== Required Methods ===
+    // You MUST implement these== in your game.
 
     // Returns the display name of the game (e.g., "GO FISH")
-    virtual const char *getName() const = 0;
+    virtual const char* getName() const = 0;
+
+    // Returns the messages to loop through
+    virtual const String* getDisplayMessages(uint8_t &count) {
+        static const String messages[] = { 
+            F("Message 1"),
+            F("Another message")
+        };
+        count = sizeof(messages) / sizeof(messages[0]);
+        return messages;
+    }
 
     // Called when the game is selected from the menu.
     // Set initial game parameters like rounds, post-deal cards.
@@ -51,10 +61,8 @@ class Game {
     // buttonPin: The pin number of the button pressed (e.g., BUTTON_PIN_1)
     virtual void handleButtonPress(int buttonPin) = 0;
 
-    // Manages display updates (e.g., scrolling instructions) when currentDealState is AWAITING_PLAYER_DECISION.
-    virtual void handleAwaitDecisionDisplay() = 0;
-
-    // === Optional Methods ===
+    // ===== Optional Methods =====
+    // You can change these, it is not required
 
     // Called just before the main dealing loop starts (after initialization to red, if applicable)
     virtual void onDealStart() {}
@@ -68,15 +76,9 @@ class Game {
         // Default behavior: if postCardsToDeal > 0, assume standard post-deal by awaiting decision.
         // If postCardsToDeal is 0 or less, set gameOver.
         if (postCardsToDeal <= 0) {
-            gameOver = true;
-        } else {
-            // The main loop will likely transition to AWAITING_PLAYER_DECISION
-            // if postDeal is true and game isn't over.
-            // Game-specific post-deal setup might happen here if needed.
+            gameOver = true; // TODO: this handling seems weird, look into - is it saying the game is over if it is out of cards to dish out to people?
         }
     }
-
-    // TODO: make these values instead of methods
 
     // Does this game require the user to select the number of cards per hand?
     virtual bool requiresCardSelection() const {
@@ -93,17 +95,55 @@ class Game {
         return false; // Default: No
     }
 
+
+    // ===== Overridable Internals =====
+    // These methods take care of complicated backend stuff
+    //  If you really want to override them, go ahead.
+
+    // Called every loop to manage display updates - by default it will cycle through the messages array
+    virtual void handleAwaitDecisionDisplay() {
+        // Serial.println("handleAwaitDecisionDisplay called"); // Debugging
+        // Serial.print("messageRepetitions: "); Serial.println(messageRepetitions); // Debugging
+        // Serial.print("lastMessageRepetitions: "); Serial.println(lastMessageRepetitions); // Debugging
+        // Serial.print("displayMessageIndex: "); Serial.println(displayMessageIndex); // Debugging
+
+        if (messageRepetitions != lastMessageRepetitions) {
+            lastMessageRepetitions = messageRepetitions;
+            displayMessageIndex++;
+
+            uint8_t messageCount = 0;
+            const String* messages = getDisplayMessages(messageCount);
+            uint8_t nextIndex = 0;
+            if (messageCount > 0) { // Catch no messages
+                nextIndex = displayMessageIndex % messageCount;
+                const String thisMessage = messages[nextIndex];
+                Serial.println("Updating message");
+                startScrollText(thisMessage.c_str(), textStartHoldTime, textSpeedInterval, textEndHoldTime);
+                scrollingStarted = true;
+            }
+        }
+
+        updateScrollText();
+    }
+
   protected:
     // Variables
     displayState lastDisplayState = DISPLAY_UNSET;
     bool scrollingStarted = false;
-    uint8_t messageLine = 0;
-    uint8_t messageRepetitions = 0; // TODO move handling of message lines into display array that is managed here...
+    int displayMessageIndex = 0;
+
+    // uint8_t messageRepetitions = 0; // TODO move handling of message lines into display array that is managed here...
 
     void dispenseCards(uint8_t amount) {
         for (uint8_t i = 0; i < amount; ++i) {
             _dealSingleCard();
         }
+    }
+
+    void resetScrollingMessages() {
+        displayMessageIndex = 0;
+        scrollingStarted = true;
+        lastMessageRepetitions = -2;
     }
 
     // Display face wrapper to handle custom faces
@@ -125,12 +165,18 @@ class Game {
     // Player passes, advance to the next player
     void nextPlayersTurn() {
         // TODO: add support for moving multiple people forwards
-        advanceOnePlayer = true;            // Signal core logic to advance one player
-        currentDealState = ADVANCING;       // Change state to advancing
+        advanceOnePlayer = true;      // Signal core logic to advance one player
+        currentDealState = ADVANCING; // Change state to advancing
     }
 
   private:
-    // Internal wrappers
+    // Internal tracking
+
+    // Known when to switch shown messages
+    int lastMessageRepetitions = -2;
+
+    // Internal util functions
+
     void _dealSingleCard() {
         dealSingleCard();
         cardDealt = false;
