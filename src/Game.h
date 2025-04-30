@@ -1,6 +1,15 @@
 #ifndef GAME_H
 #define GAME_H
 
+//
+//  In general, the idea behind this class is to abstract all functionality needed for games in here.
+//  Individual games can then implement different handling for their game by overriding methods here.
+// 
+//  Ideally, any methods that have complicated handling for all games have an underscore in their name,
+//    like "_method". This "_method" will both preform complex operations, and then call the "method" 
+//    of the subclass to allow it to handle that specific event, without requiring any complex functionality.
+// 
+
 #include <Arduino.h>
 #include "Enums.h"
 #include "Definitions.h"
@@ -124,6 +133,15 @@ class Game {
         }
 
         updateScrollText();
+    }
+
+    // Internal function dispatch buttons then restart scrolling text
+    virtual void _handleButtonPress(int buttonPin) {
+        // Call the subclass's internal method.
+        handleButtonPress(buttonPin);
+
+        // Start up scrolling messages
+        resetScrollingMessages();
     }
 
     // Internal function to run when deal ends, which calls when it finishes running internal code

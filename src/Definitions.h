@@ -1,8 +1,8 @@
 // Inputs
-#define BUTTON_PIN_1 17
-#define BUTTON_PIN_2 16
-#define BUTTON_PIN_3 15
-#define BUTTON_PIN_4 14
+#define BUTTON_PIN_1 17 // Green
+#define BUTTON_PIN_2 16 // Blue
+#define BUTTON_PIN_3 15 // Yellow
+#define BUTTON_PIN_4 14 // Red
 #define RIG_SWITCH A6
 
 // MOTOR PINS

@@ -36,16 +36,13 @@ class GoFish : public Game {
     }
 
     void handleButtonPress(int buttonPin) override {
-        if (buttonPin == BUTTON_PIN_1) { // Green Button (Pass)
+        if (buttonPin == Buttons::GREEN) {
             nextPlayersTurn();
 
-        } else if (buttonPin == BUTTON_PIN_2) { // Blue Button (Fish)
+        } else if (buttonPin == Buttons::BLUE) {
             // Dispense a card
             displayFace("o  o");
             dispenseCards(1);
-
-            // Start the scrolling messages again
-            resetScrollingMessages();
         }
     }
 

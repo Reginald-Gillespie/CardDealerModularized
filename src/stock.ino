@@ -588,10 +588,8 @@ In the setup for this build, we make sure our sensors are working and run a few 
 #pragma region SETUP
 
 void setup() {
-    // if (useSerial) {
     Serial.begin(115200);
     Serial.println(F("Beginning HP_DEALR_2_2_4 02/2025"));
-    // }
 
     if (useSerial) {
         Serial.print(F("Registered games: "));
@@ -868,7 +866,7 @@ void handleDealingState() {
                 if (remainingRoundsToDeal == 0) {
                     postDeal = true; // Enter post-deal phase
                     if (currentGamePtr) {
-                        currentGamePtr->onMainDealEnd(); // Notify the game object
+                        currentGamePtr->_onMainDealEnd(); // Notify the game object
                     }
                     // The main loop/state machine will handle the transition
                     // (e.g., to AWAITING_PLAYER_DECISION or handle flip card)
@@ -1372,7 +1370,7 @@ void handleStandardGameDecisionsAfterFineAdjust() {
                 // Notify the current game object that the main deal is finished
                 if (currentGamePtr) {
                     if (useSerial) Serial.println(F("Notifying game object: onMainDealEnd()"));
-                    currentGamePtr->onMainDealEnd(); // Let the game handle specific end-of-main-deal logic.
+                    currentGamePtr->_onMainDealEnd(); // Let the game handle specific end-of-main-deal logic.
                 } else {
                     if (useSerial) Serial.println(F("WARN: Main deal finished but currentGamePtr is null."));
                 }
@@ -1940,7 +1938,7 @@ void onButton1Release() {
     // If we're playing a game and awaiting a player decision, do one of these things based on the game:
     if (currentDealState == AWAITING_PLAYER_DECISION) {
         if (currentGamePtr) {
-            currentGamePtr->handleButtonPress(BUTTON_PIN_1); // TODO: I'd like to change this from passing the button pin to passing a button enum of the color
+            currentGamePtr->_handleButtonPress(BUTTON_PIN_1); // TODO: I'd like to change this from passing the button pin to passing a button enum of the color
         } else if (taglessGame) {
             // This tagless stuff was not in the original code here... so why did the AI put it here? Oh well, I don't really care about tagless
             advanceOnePlayer = true;
@@ -1956,7 +1954,7 @@ void onButton2Release() {
     // This function handles what happens when we release Button 2 (blue).
     if (currentDealState == AWAITING_PLAYER_DECISION) {
         if (currentGamePtr) {
-            currentGamePtr->handleButtonPress(BUTTON_PIN_2);
+            currentGamePtr->_handleButtonPress(BUTTON_PIN_2);
         } else if (taglessGame) {
             lastDealtTime = millis();
             dealSingleCard();
@@ -1977,7 +1975,7 @@ void onButton3Release() {
 
     if (currentDealState == AWAITING_PLAYER_DECISION) {
         if (currentGamePtr) {
-            currentGamePtr->handleButtonPress(BUTTON_PIN_3); // If Yellow had a game function
+            currentGamePtr->_handleButtonPress(BUTTON_PIN_3); // If Yellow had a game function
         }
         // else if (taglessGame) { } // No action for Yellow in tagless await?
     } else if (currentDisplayState == SCREENSAVER || currentDisplayState == SCROLL_PLACE_TAGS_TEXT || currentDisplayState == SCROLL_PICK_GAME_TEXT) {
@@ -1993,7 +1991,7 @@ void onButton4Release() {
     // Because this is the back button, we can't do this... TODO: look at whether the game class overrides the button4 call. Maybe call the function and if it returns false then go back or smth?
     // if (currentDealState == AWAITING_PLAYER_DECISION) {
     //     if (currentGamePtr) {
-    //         currentGamePtr->handleButtonPress(BUTTON_PIN_3); // If Yellow had a game function
+    //         currentGamePtr->_handleButtonPress(BUTTON_PIN_3); // If Yellow had a game function
     //     }
     //     // else if (taglessGame) { } // No action for Yellow in tagless await?
     // }

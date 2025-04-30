@@ -3,6 +3,8 @@
 #ifndef SHARED_ENUMS_H
 #define SHARED_ENUMS_H
 
+#include "Definitions.h"
+
 // DEAL STATE: Tracks DEALR's operational states
 enum dealState {
     IDLE,                     // Enter this state when we are in menus or finished a game.
@@ -36,13 +38,15 @@ enum displayState {
     CUSTOM_FACE             // Custom displays the `customFace` string, used by the Game class 
 };
 
+// Buttons
+enum Buttons : int {
+    GREEN = BUTTON_PIN_1,
+    BLUE = BUTTON_PIN_2,
+    YELLOW = BUTTON_PIN_3,
+    RED = BUTTON_PIN_4
+};
+
 // Enums to help intellisense for game modules
-// struct GamInitResult {
-//     enum Value {
-//         NeedsPlayerCardInput,
-//         DealImmediately,
-//     };
-// };
 struct GamInitResult {
     static constexpr bool StartDealing = true;
     // These three are the same but are easier to work with and allow further refarctoring down the road
