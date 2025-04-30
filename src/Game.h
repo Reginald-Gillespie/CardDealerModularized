@@ -126,6 +126,15 @@ class Game {
         updateScrollText();
     }
 
+    // Internal function to run when deal ends, which calls when it finishes running internal code
+    virtual void _onMainDealEnd() {
+        // Call the subclass's deal end code.
+        onMainDealEnd();
+
+        // Start up scrolling messages
+        resetScrollingMessages();
+    }
+
   protected:
     // Variables
     displayState lastDisplayState = DISPLAY_UNSET;
@@ -140,6 +149,7 @@ class Game {
         }
     }
 
+    // Reset the scrolling messages to the start
     void resetScrollingMessages() {
         displayMessageIndex = 0;
         scrollingStarted = true;
@@ -155,6 +165,7 @@ class Game {
         updateDisplay();
     }
 
+    // Restore whatever state the face was in before running displayFace
     void restoreFace() {
         if (lastDisplayState != DISPLAY_UNSET) {
             currentDisplayState = lastDisplayState;
@@ -167,6 +178,12 @@ class Game {
         // TODO: add support for moving multiple people forwards
         advanceOnePlayer = true;      // Signal core logic to advance one player
         currentDealState = ADVANCING; // Change state to advancing
+    }
+
+    void setDealAmount(uint8_t amount) {
+        initialRoundsToDeal = amount;
+        postCardsToDeal = 127;                       // Use a large number to signify 'deal until empty' logic needed later
+        remainingRoundsToDeal = initialRoundsToDeal; // Second value has smth to do with rigged game handling?
     }
 
   private:

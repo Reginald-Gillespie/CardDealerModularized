@@ -28,10 +28,10 @@ class GoFish : public Game {
     // bool requiresPlayerSelection() const override { return true; }
 
     bool initialize() override {
-        initialRoundsToDeal = 0;
-        postCardsToDeal = 127;                       // Use a large number to signify 'deal until empty' logic needed later
-        remainingRoundsToDeal = initialRoundsToDeal; // Second value has smth to do with rigged game handling?
+        // Start GoFish with 7 cards each
+        setDealAmount(7);
 
+        // Let the system know to start dealing right away
         return GamInitResult::StartDealing;
     }
 
@@ -40,10 +40,11 @@ class GoFish : public Game {
             nextPlayersTurn();
 
         } else if (buttonPin == BUTTON_PIN_2) { // Blue Button (Fish)
-            // Player asks for a card
+            // Dispense a card
             displayFace("o  o");
             dispenseCards(1);
-            restoreFace();
+
+            // Start the scrolling messages again
             resetScrollingMessages();
         }
     }
@@ -52,9 +53,6 @@ class GoFish : public Game {
 
     void onMainDealEnd() override {
         Serial.println(F("GoFish: Main deal complete. Entering post-deal phase."));
-
-        // Reset scroll state for AwaitDecision phase
-        resetScrollingMessages();
     }
 };
 
