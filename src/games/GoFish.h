@@ -1,10 +1,6 @@
 #ifndef GO_FISH_H
 #define GO_FISH_H
 
-#ifndef useSerial
-#define useSerial 0
-#endif
-
 #include "../Game.h" // Include base class - use relative path
 
 class GoFish : public Game {
@@ -13,9 +9,9 @@ class GoFish : public Game {
     const char* getName() const override {
         return "GO FISH";
     }
-    
-    const String* getDisplayMessages(uint8_t &count) override {
-        static const String messages[] = { 
+
+    const String* getDisplayMessages(uint8_t& count) override {
+        static const String messages[] = {
             "  BLUE = FISH  ",
             "  GREEN = PASS  "
         };

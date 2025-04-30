@@ -588,20 +588,22 @@ In the setup for this build, we make sure our sensors are working and run a few 
 #pragma region SETUP
 
 void setup() {
-    Serial.begin(115200);
-    Serial.println(F("Beginning HP_DEALR_2_2_4 02/2025"));
-
     if (useSerial) {
+        Serial.begin(115200);
+        Serial.println(F("Beginning HP_DEALR_2_2_4 02/2025"));
+    }
+
+    if (verbose) {
         Serial.print(F("Registered games: "));
         Serial.println(gameRegistry.getGameCount());
     }
 
     if (sensor.begin()) {
-        if (useSerial) {
+        if (verbose) {
             Serial.println(F("Found NHY3274TH sensor"));
         }
     } else {
-        if (useSerial) {
+        if (verbose) {
             Serial.println(F("No NHY3274TH sensor found ... check your connections"));
         }
     }
@@ -677,7 +679,7 @@ void setup() {
 
     loadStoredUVValueFromEEPROM(storedUVThreshold); // If we have never run the UV Tuning tool, the storedUVThreshold will be the default value.
 
-    if (useSerial) {
+    if (verbose) {
         Serial.println(F("Colors loaded from EEPROM are "));
         printStoredColors();
 
@@ -747,7 +749,7 @@ void checkState() // Always running to make sure DEALR does the right things in 
 
     if (errorInProgress) // At any point, we can set "errorInProgress" to "true" and enter into the RESET_DEALR state.
     {
-        if (useSerial) {
+        if (verbose) {
             Serial.println(F("Error in progress (main loop)."));
         }
         errorInProgress = false;
@@ -859,7 +861,7 @@ void handleDealingState() {
         if (!postDeal && !toolsMenuActive && !taglessGame) {               // Check if main deal round might be ending
             if (activeColor == colorLeftOfDealer && notFirstRoundOfDeal) { // Completed a round?
                 remainingRoundsToDeal--;
-                if (useSerial) {
+                if (verbose) {
                     Serial.print(F("Rounds left: "));
                     Serial.println(remainingRoundsToDeal);
                 }
@@ -1304,7 +1306,7 @@ void handleStandardGameDecisionsAfterFineAdjustOld() {
 void handleStandardGameDecisionsAfterFineAdjust() {
     // This function handles decision-making in non-rigged games after a color has been confirmed.
 
-    if (useSerial) {
+    if (verbose) {
         Serial.print(F("Handling standard game decisions after fine adjust. Active color: "));
         Serial.println(activeColor);
     }
@@ -1326,7 +1328,7 @@ void handleStandardGameDecisionsAfterFineAdjust() {
         {
             colorStatus[activeColor - 1] = 0; // Mark red as seen (value doesn't matter much in standard games)
             notFirstRoundOfDeal = true;       // Indicate we are now in the second or later round.
-            if (useSerial) Serial.println(F("Reached red tag again (not first round)."));
+            if (verbose) Serial.println(F("Reached red tag again (not first round)."));
         }
         // Note: In standard games, we don't deal to red first. The ADVANCING state moves us off red
         // to the player left of the dealer immediately after initialization.
@@ -1336,7 +1338,7 @@ void handleStandardGameDecisionsAfterFineAdjust() {
         {
             playerLeftOfDealerIdentified = true;
             colorLeftOfDealer = activeColor; // This is the first non-red tag seen after initialization to red.
-            if (useSerial) {
+            if (verbose) {
                 Serial.print(F("Identified player left of dealer: color "));
                 Serial.println(colorLeftOfDealer);
             }
@@ -1346,7 +1348,7 @@ void handleStandardGameDecisionsAfterFineAdjust() {
         // Keeping it here for now as per original code structure.
         if (currentGame == 3 && numTags > 2) // If we're playing War, and there are more than 2 tags:
         {
-            if (useSerial) Serial.println(F("ERROR: War game detected with >2 tags."));
+            if (verbose) Serial.println(F("ERROR: War game detected with >2 tags."));
             errorInProgress = true;                      // This will trigger a reset via checkState()
             displayErrorMessage("EROR - TOO MANY TAGS"); // Display error message
             // No need to return here, checkState will handle the error soon.
@@ -1354,31 +1356,31 @@ void handleStandardGameDecisionsAfterFineAdjust() {
 
         // Check if we've completed a full round by reaching the player left of dealer again
         if (activeColor == colorLeftOfDealer && notFirstRoundOfDeal) {
-            if (useSerial) Serial.println(F("Completed a round (reached player left of dealer again)."));
+            if (verbose) Serial.println(F("Completed a round (reached player left of dealer again)."));
             remainingRoundsToDeal--; // Decrement the number of rounds remaining to deal in the main deal.
 
-            if (useSerial) {
+            if (verbose) {
                 Serial.print(F("Rounds remaining in main deal: "));
                 Serial.println(remainingRoundsToDeal);
             }
 
             // --- Check if Main Deal is Complete ---
             if (remainingRoundsToDeal == 0 && !postDeal) {
-                if (useSerial) Serial.println(F("Main deal complete. Entering post-deal phase."));
+                if (verbose) Serial.println(F("Main deal complete. Entering post-deal phase."));
                 postDeal = true; // Transition to the post-deal phase.
 
                 // Notify the current game object that the main deal is finished
                 if (currentGamePtr) {
-                    if (useSerial) Serial.println(F("Notifying game object: onMainDealEnd()"));
+                    if (verbose) Serial.println(F("Notifying game object: onMainDealEnd()"));
                     currentGamePtr->_onMainDealEnd(); // Let the game handle specific end-of-main-deal logic.
                 } else {
-                    if (useSerial) Serial.println(F("WARN: Main deal finished but currentGamePtr is null."));
+                    if (verbose) Serial.println(F("WARN: Main deal finished but currentGamePtr is null."));
                 }
 
                 // Handle "remainder" cards like a flip card (e.g., Crazy Eights, Rummy)
                 // This check uses the game object's definition.
                 if (!gameOver && currentGamePtr && currentGamePtr->requiresFlipCard()) {
-                    if (useSerial) Serial.println(F("Game requires a flip card. Handling flip..."));
+                    if (verbose) Serial.println(F("Game requires a flip card. Handling flip..."));
                     handleFlipCard(); // Core function to perform the flip sequence (moves off tag, displays FLIP, deals, returns)
                     // Note: handleFlipCard() is expected to set postDealRemainderHandled = true; upon completion.
                     // It might also change the display state, but we'll set the DealState below.
@@ -1386,13 +1388,13 @@ void handleStandardGameDecisionsAfterFineAdjust() {
                     // After the flip sequence, the next state is typically AWAITING_PLAYER_DECISION
                     if (!gameOver) { // Ensure game hasn't somehow ended during the flip
                         currentDealState = AWAITING_PLAYER_DECISION;
-                        if (useSerial) Serial.println(F("Flip handled. Transitioning to AWAITING_PLAYER_DECISION."));
+                        if (verbose) Serial.println(F("Flip handled. Transitioning to AWAITING_PLAYER_DECISION."));
                         return; // Exit this function as state is decided and changed
                     }
                 } else if (!gameOver) {
                     // Main deal is over, no flip card needed, or game is over.
                     // If not game over, transition to AWAITING_PLAYER_DECISION for the post-deal phase.
-                    if (useSerial) Serial.println(F("Main deal complete, no flip card. Transitioning to AWAITING_PLAYER_DECISION."));
+                    if (verbose) Serial.println(F("Main deal complete, no flip card. Transitioning to AWAITING_PLAYER_DECISION."));
                     postDealRemainderHandled = true; // Mark remainder handling complete (because there was no remainder to handle)
                     currentDealState = AWAITING_PLAYER_DECISION;
                     return; // Exit this function as state is decided and changed
@@ -1410,7 +1412,7 @@ void handleStandardGameDecisionsAfterFineAdjust() {
     // 1. We are NOT in the post-deal phase (main deal is ongoing), OR
     // 2. We ARE in the post-deal phase, BUT the remainder (like the flip card) has NOT been handled yet.
     if (!postDeal || !postDealRemainderHandled) {
-        if (useSerial) Serial.println(F("Main deal ongoing or remainder needs handling. Transitioning to DEALING."));
+        if (verbose) Serial.println(F("Main deal ongoing or remainder needs handling. Transitioning to DEALING."));
         currentDealState = DEALING; // Proceed to deal the card at the current tag.
     }
     // If postDeal is true AND postDealRemainderHandled is true, and game is not over,
@@ -1686,7 +1688,7 @@ void handleTaglessDealState() // Handles what happens when we enter a "tagless d
 void handleIdleState() // Handles what happens in the "IDLE" dealing state.
 {
     if (newDealState == true) {
-        if (useSerial) {
+        if (verbose) {
             Serial.println(F("Entered IDLE state from other state."));
         }
         newDealState = false;
@@ -2469,7 +2471,7 @@ void startPreGameAnimation() // Starts the pre-game animation, which transitions
     if (!initialAnimationInProgress && !initialAnimationComplete) {
         currentDisplayState = INTRO_ANIM;
         initialAnimationInProgress = true;
-        if (useSerial) {
+        if (verbose) {
             Serial.println(F("Starting pre-game animation..."));
         }
     }
@@ -2581,7 +2583,7 @@ void updateDisplay() {
         currentFrameIndex = 0;
         lastFrameTime = millis();
         previousDisplayState = currentDisplayState;
-        if (useSerial) {
+        if (verbose) {
             Serial.print(F("Display state changed to: "));
             Serial.println(currentDisplayState);
         }
@@ -2767,7 +2769,7 @@ void runAnimation(const DisplayAnimation& animation) {
     if (lastAnimation != &animation) // If switching animations, reset frame tracking
 
     {
-        if (useSerial) {
+        if (verbose) {
             Serial.println(F("New animation detected! Resetting frames."));
         }
         currentFrame = 0;
@@ -2776,7 +2778,7 @@ void runAnimation(const DisplayAnimation& animation) {
         lastDisplayedFrame = 255;        // Force the first frame to print
 
         displayFace(animation.frames[currentFrame]); // Display the first frame immediately
-        if (useSerial) {
+        if (verbose) {
             Serial.print(F("Frame: "));
             Serial.print(animation.frames[currentFrame]);
             Serial.print(F(" | Interval: "));
@@ -2793,7 +2795,7 @@ void runAnimation(const DisplayAnimation& animation) {
 
         if (&animation == &initialBlinking && currentFrame == animation.numFrames - 1) // If this is the last frame of `initialBlinking`, mark the animation as complete and stop updating
         {
-            if (useSerial) {
+            if (verbose) {
                 Serial.println(F("Initial blinking animation complete!"));
             }
             currentFrame = 0;
@@ -2809,7 +2811,7 @@ void runAnimation(const DisplayAnimation& animation) {
 
         if (currentFrame != lastDisplayedFrame) // Print debug before changing frames
         {
-            if (useSerial) {
+            if (verbose) {
                 Serial.print(F("Frame: "));
                 Serial.print(animation.frames[currentFrame]);
                 Serial.print(F(" | Interval: "));
@@ -2852,7 +2854,7 @@ UI MANIPULATION FUNCTIONS
 
 void advanceMenu() {
     // Advances menus in UI according to current selection.
-    if (useSerial) {
+    if (verbose) {
         Serial.println(F("Advancing menu."));
     }
     scrollingStarted = false;
@@ -2930,13 +2932,13 @@ void advanceMenu() {
                             numPlayersLocked = false;
                         } else {
                             // Should not happen if initialize is false without requiring selection
-                            if (useSerial) Serial.println(F("WARN: initialize false but no selection required?"));
+                            if (verbose) Serial.println(F("WARN: initialize false but no selection required?"));
                             currentDisplayState = SELECT_GAME; // Stay here? Or error?
                         }
                     }
                 } else {
                     // Error getting game pointer
-                    if (useSerial) Serial.println(F("ERROR: Invalid game pointer selected!"));
+                    if (verbose) Serial.println(F("ERROR: Invalid game pointer selected!"));
                     currentDisplayState = ERROR; // Go to error state
                     currentDealState = IDLE;
                 }
@@ -2946,7 +2948,7 @@ void advanceMenu() {
                 currentToolsMenu = 0; // Start at the first tool
             } else {
                 // Should not happen
-                if (useSerial) Serial.println(F("ERROR: Invalid currentGame index in advanceMenu!"));
+                if (verbose) Serial.println(F("ERROR: Invalid currentGame index in advanceMenu!"));
                 currentDisplayState = ERROR;
                 currentDealState = IDLE;
             }
@@ -3002,7 +3004,7 @@ void advanceMenu() {
                 // The increase/decreaseSetting functions modify numberOfCards.
                 // Pressing Advance (Button 1) locks it in.
                 numCardsLocked = true;
-                if (useSerial) Serial.print(F("Locked cards: "));
+                if (verbose) Serial.print(F("Locked cards: "));
                 Serial.println(numberOfCards);
                 // Now check if player selection is also needed
                 if (currentGamePtr->requiresPlayerSelection()) {
@@ -3034,7 +3036,7 @@ void advanceMenu() {
                 // increase/decreaseSetting modify numberOfPlayers
                 // Pressing Advance locks it in
                 numPlayersLocked = true;
-                if (useSerial) Serial.print(F("Locked players: "));
+                if (verbose) Serial.print(F("Locked players: "));
                 Serial.println(numberOfPlayers);
                 // After locking players, start dealing
                 currentDisplayState = DEAL_CARDS;
@@ -3082,7 +3084,7 @@ void advanceMenu() {
 
 void goBack() // Returns to prior menu, or exits program.
 {
-    if (useSerial) {
+    if (verbose) {
         Serial.println(F("Going back one menu."));
     }
     scrollingMenu = false;
@@ -3733,7 +3735,7 @@ void checkTimeouts() // Checks to see whether device has been idle for a long ti
 
     if (buttonInitialization && currentDealState == IDLE && !insideDealrTools && currentTime - overallTimeoutTag > timeUntilScreensaverStart) // List of some circumstances where we want to disable the overall timeout function.
     {
-        if (useSerial) {
+        if (verbose) {
             Serial.println(F("System timed out. Returning to screensaver."));
         }
         stopScrollText();

@@ -40,9 +40,6 @@ class GameRegistry {
             games[gameCount++] = game;
             return true;
         }
-        if (useSerial) {
-            Serial.println(F("ERROR: Game Registry full or invalid game pointer!"));
-        }
         return false;
     }
 
