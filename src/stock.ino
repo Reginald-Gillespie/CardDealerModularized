@@ -932,10 +932,10 @@ void cardDispensingActions() {
     unsigned long currentTime = millis();
 
     // If there's an error in progress, get us out of the dispensing function.
-    if (errorInProgress) {
-        // Serial.println("Error in progress!");
-        return;
-    }
+    // if (errorInProgress) {
+    //     // Serial.println("Error in progress!");
+    //     return;
+    // }
 
     // If we're not yet throwing a card, fire up the motors that allow us to throw a card.
     if (!throwingCard) {
@@ -3274,9 +3274,9 @@ void slideCard() // This function proceeds through steps to eject a card from DE
                 feedCard.write(90);
                 slideStep = 0;
                 throwingCard = false;
-                if (!errorInProgress) {
+                // if (!errorInProgress) {
                     cardDealt = true;
-                }
+                // }
                 overallTimeoutTag = currentTime;
                 delay(10);
             }
@@ -3602,8 +3602,8 @@ ERROR AND TIMEOUT HANDLING FUNCTIONS
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma region Error and Timeout
 
-void handleThrowingTimeout(unsigned long currentTime) // Handles timeouts while dealing cards. If something is taking too long, something's probably going wrong.
-{
+// Handles timeouts while dealing cards. If something is taking too long, something's probably going wrong.
+void handleThrowingTimeout(unsigned long currentTime) {
     static unsigned long retractDuration = 1000;
     static bool retractStarted = false;
     static bool retractCompleted = false;
@@ -3630,26 +3630,42 @@ void handleThrowingTimeout(unsigned long currentTime) // Handles timeouts while 
     if (retractCompleted) {
         retractCompleted = false;
         if (currentToolsMenu == 1) {
-            errorInProgress = true;
-            shufflingCards = false;
-            toolsMenuActive = false;
-            toolsExit = true;
-            currentDisplayState = SELECT_TOOL;
-            currentDealState = RESET_DEALR;
+            // errorInProgress = true;
+            // shufflingCards = false;
+            // toolsMenuActive = false;
+            // toolsExit = true;
+            // currentDisplayState = SELECT_TOOL;
+            // currentDealState = RESET_DEALR;
+
+            resetThrowCardState();
+
+
         } else if (currentToolsMenu == 2) {
             errorInProgress = true;
             separatingCards = false;
             toolsMenuActive = true;
             toolsExit = true;
             currentDisplayState = SELECT_TOOL;
-            currentDealState = RESET_DEALR;
+            // currentDealState = RESET_DEALR;
         } else {
-            errorInProgress = true;
-            currentDisplayState = ERROR;
-            currentDealState = RESET_DEALR;
+            // errorInProgress = true;
+            // currentDisplayState = ERROR;
+            // currentDealState = RESET_DEALR
+            resetThrowCardState();
         }
         updateDisplay();
     }
+}
+
+// Reset the state of the card dealer after dispensing / failing to dispence a card
+void resetThrowCardState() {
+    previousSlideStep = -1;
+    feedCard.write(90);
+    slideStep = 0;
+    throwingCard = false;
+    cardDealt = true;
+    overallTimeoutTag = millis();
+    delay(10);
 }
 
 void handleFineAdjustTimeout() // Handles timeout for fine adjustment moves.
