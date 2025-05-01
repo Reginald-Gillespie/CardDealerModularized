@@ -395,8 +395,8 @@ bool toolsExit = false;                    // Indicates, during a reset, that we
 bool rotationTimeChecked = false;          // Indicates whether or not we have checked how long it takes to rotate one full turn from red tag to red tag.
 bool errorInProgress = false;              // Indicates whether or not an error is detected to be in progress.
 bool tagsChecked = false;                  // Indicates whether or not we have checked for tags (used in tagless deals and rigged games).
-bool CW = true;                            // A convenience variable. Now we can say "rotate(CW)" instead of "rotate(true)"
-bool CCW = false;                          // A convenience variable. Now we can say "rotate(CCW)" instead of "rotate(false)"
+#define CW true                            // Clockwise
+#define CCW false                          // Counter-Clockwise
 bool cardInCraw = true;                    // "Card-In-Craw" means there is a card in the mouth of the DEALR. The IR sensor reads "high" when not active and "low" when a card is in the beam.
 bool previousCardInCraw = true;            // Flag for holding previous card-in-craw state
 bool currentlyPlayerLeftOfDealer = false;  // Indicates when we're currently looking at the player left of dealer.
@@ -935,7 +935,7 @@ void cardDispensingActions() {
     handleThrowingTimeout(currentTime); // If we're trying to throw a card but too much time elapses, throw an error and exit to a main menu.
 }
 
-// Turns on the flywheel.
+// Turns on the flywheel
 void prepareForDeal() {
     unsigned long currentTime = millis();
 
@@ -982,26 +982,25 @@ void initializeToRed() // When we start dealing, we don't know where we are, so 
     }
 }
 
-void handleAdvancingState() // Executes when currentDealState = ADVANCING.
-{
-    if (taglessGame && postDeal) // If we're advancing, but we're in the tagless game mode and the main deal has completed successfully:
-    {
+// Executes when currentDealState = ADVANCING.
+void handleAdvancingState() {
+    // If we're advancing, but we're in the tagless game mode and the main deal has completed successfully:
+    if (taglessGame && postDeal) {
         handleTaglessPlayerPostDealAdvance();
         return;
     }
 
-    if (newDealState) // In this block we can do anything we only want to do each time we enter the "advancing" state from a different state
-    {
+    // In this block we can do anything we only want to do each time we enter the "advancing" state from a different state
+    if (newDealState) {
         adjustInProgress = false;
         newDealState = false;
         if (activeColor != 0) {
             previousActiveColor = activeColor; // As we start moving away from a color, log it as the "previous color" so we can track the difference as we advance.
         }
 
-        if (!postDealRemainderHandled && !postDeal && !separatingCards && !shufflingCards) // If it's not the post-deal (etc), check if there are rounds left to deal.
-        {
-            if (remainingRoundsToDeal == 0) // If there are no more rounds to deal, set "postDeal" to true and enter into that stae.
-            {
+        if (!postDealRemainderHandled && !postDeal && !separatingCards && !shufflingCards) {
+            // If there are no more rounds to deal, set "postDeal" to true and enter into that state.
+            if (remainingRoundsToDeal == 0) {
                 postDeal = true;
                 rotatingBackwards = false; // In post-deal we always rotate forwards, so in any mode that has us rotating backwards, switch to forward rotation.
             }
@@ -1014,8 +1013,8 @@ void handleAdvancingState() // Executes when currentDealState = ADVANCING.
         }
     }
 
-    if (activeColor == 0 && !adjustInProgress) // While we're seeing black and not adjusting, rotate at high speed until we hit the next color spike.
-    {
+    // While we're seeing black and not adjusting, rotate at high speed until we hit the next color spike.
+    if (activeColor == 0 && !adjustInProgress) {
         if (rotatingBackwards) {
             rotate(highSpeed, CCW);
         } else {
@@ -1025,8 +1024,8 @@ void handleAdvancingState() // Executes when currentDealState = ADVANCING.
 
     colorScan();
 
-    if (baselineExceeded && !adjustInProgress) // If color spikes, run fineAdjustCheck. This "adjustment" helps us reverse and re-check the color in case we accidentally zoomed past the tag.
-    {
+    // If color spikes, run fineAdjustCheck. This "adjustment" helps us reverse and re-check the color in case we accidentally zoomed past the tag.
+    if (baselineExceeded && !adjustInProgress) {
         adjustStart = millis();
         adjustInProgress = true;
     }
@@ -1037,8 +1036,8 @@ void handleAdvancingState() // Executes when currentDealState = ADVANCING.
     }
 }
 
-void fineAdjustCheck() // fineAdjustCheck() starts after a bump in color is seen. It instructs Motor 2 to backtrack until it confirms the color.
-{
+// fineAdjustCheck() starts after a bump in color is seen. It instructs Motor 2 to backtrack until it confirms the color.
+void fineAdjustCheck() {
     unsigned long currentTime = millis(); // Update time
 
     if (!fineAdjustCheckStarted) // the first time we enter fineAdjust, set adjustStart = to millis()
@@ -1124,8 +1123,8 @@ void handleInitializingStateInAdjust() // Handles when a fine-adjustment is call
     }
 }
 
-void handleAdvancingStateInAdjust() // This function handles the decision-making on how we advance after a color has been confirmed following the fineAdjustCheck process.
-{
+// This function handles the decision-making on how we advance after a color has been confirmed following the fineAdjustCheck process.
+void handleAdvancingStateInAdjust() {
     adjustInProgress = false;       // Resets a tag used in the fine adjustment operation
     fineAdjustCheckStarted = false; // Resets a tag used in the fine adjustment operation
     correctingCW = false;           // Resets a tag used in the fine adjustment operation
@@ -1193,8 +1192,8 @@ void handleAdvancingStateInAdjust() // This function handles the decision-making
     }
 }
 
-void handleTaglessPlayerPostDealAdvance() // This function helps the "tagless deal" game mode time its advancing moves after the main deal.
-{
+// This function helps the "tagless deal" game mode time its advancing moves after the main deal.
+void handleTaglessPlayerPostDealAdvance() {
     unsigned long currentTime = millis();
     colorScan();
 
@@ -1227,8 +1226,8 @@ void handleRotationAdjustments() // This function handles switching directions w
     }
 }
 
+// This function handles decision-making in non-rigged games after a color has been confirmed.
 void handleStandardGameDecisionsAfterFineAdjustOld() {
-    // This function handles decision-making in non-rigged games after a color has been confirmed.
 
     if (activeColor == 1) {
         // We don't note the color "red" during initialization, so if the color we just hit is red, then we must have made our first full rotation.
@@ -1283,8 +1282,8 @@ void handleStandardGameDecisionsAfterFineAdjustOld() {
     currentDealState = DEALING;
 }
 
+// This function handles decision-making in non-rigged games after a color has been confirmed.
 void handleStandardGameDecisionsAfterFineAdjust() {
-    // This function handles decision-making in non-rigged games after a color has been confirmed.
 
     if (verbose) {
         Serial.print(F("Handling standard game decisions after fine adjust. Active color: "));
@@ -1410,8 +1409,8 @@ void handleStandardGameRemainderCards() // This function handles how community c
     }
 }
 
-void handlePostDealGameplay() // This function handles the post-deal portion of games that do not end after the main deal.
-{
+// This function handles the post-deal portion of games that do not end after the main deal.
+void handlePostDealGameplay() {
     if ((currentGame == 3 || currentGame == 4) && !toolsMenuActive) // War and Hearts have no post-deal, so we toggle "gameOver" immediately after the main deal to exit cleanly.
     {
         gameOver = true;
@@ -1715,8 +1714,8 @@ void handleGameOver() // Handles when "game over" has been declared by initiatin
     updateDisplay();
 }
 
-void moveOffActiveColor(bool rotateClockwise) // Function that moves DEALR off the active tag, ideally into an empty portion of the circle.
-{
+// Function that moves DEALR off the active tag, ideally into an empty portion of the circle.
+void moveOffActiveColor(bool rotateClockwise) {
     while (activeColor != 0) {
         if (errorInProgress) {
             return;
@@ -1761,8 +1760,8 @@ void handleFlipCard() // Moves to an unused area, displays "FLIP", and then deal
     handlingFlipCard = false;
 }
 
-void dealTagless() // Handles "tagless deals", where we use only the red tag for homing, but can deal to any number of players.
-{
+// Handles "tagless deals", where we use only the red tag for homing, but can deal to any number of players.
+void dealTagless() {
     unsigned long currentTime = millis();
 
     if (stopped) {
@@ -1802,8 +1801,8 @@ void dealTagless() // Handles "tagless deals", where we use only the red tag for
     }
 }
 
-void checkRotationTime() // Used during "tagless" deal. We see how long it takes to rotate around in a circle and then divide that up into intervals.
-{
+// Used during "tagless" deal. We see how long it takes to rotate around in a circle and then divide that up into intervals.
+void checkRotationTime() {
     unsigned long currentTime = millis();
     static bool rotationStarted = false;
     static unsigned long rotationStartTime = 0;
@@ -1828,8 +1827,8 @@ void checkRotationTime() // Used during "tagless" deal. We see how long it takes
     }
 }
 
-void handleAdvancingOnePlayer() // This function is used during post-deals when we only want to advance a single player at a time.
-{
+// This function is used during post-deals when we only want to advance a single player at a time.
+void handleAdvancingOnePlayer() {
     while (activeColor < 1) // While we're looking at black, rotate and scan.
     {
         rotate(mediumSpeed, CW);
@@ -1857,12 +1856,25 @@ void handleAdvancingOnePlayer() // This function is used during post-deals when 
         }
     }
 
-    advanceOnePlayer = false;
     adjustStart = millis();
     fineAdjustCheckStarted = false;
-    adjustInProgress = false;
     correctingCW = false;
     correctingCCW = false;
+    adjustInProgress = false;
+
+    // If we were told to advance more turns at a time, do that
+    currentGamePtr->turnsToAdvance--;
+    if (currentGamePtr->turnsToAdvance > 0) {
+        // Move off the active color to avoid double registering this one
+        moveOffActiveColor(CW);
+        // Reset flags to move to next
+        previousActiveColor = activeColor;
+        advanceOnePlayer = true;
+        currentDealState = ADVANCING;
+        return; // Exit early so that this is called again
+    }
+
+    advanceOnePlayer = false;
     currentDealState = AWAITING_PLAYER_DECISION;
 }
 #pragma endregion State Handling
@@ -2145,14 +2157,14 @@ void pollCraw() // Checks the IR sensor to see whether or not a card is in the m
     }
 }
 
-void colorScan() // Wrapper function for grabbing the black value from EEPROM and comparing it to color reading data from colorRead.
-{
+// Wrapper function for grabbing the black value from EEPROM and comparing it to color reading data from colorRead.
+void colorScan() {
     uint16_t blackBaseline = calculateBlackBaseline(); // Retrieve the stored brightness of "no tag" (i.e. black) in order to compare color spikes.
     colorRead(blackBaseline);                          // Read color every loop (with respect to the brightness of "black") as we advance towards the next color.
 }
 
-void colorRead(uint16_t blackBaseline) // Checks the color sensing board to see what color we're looking at, and assigns that to be "activeColor".
-{
+// Checks the color sensing board to see what color we're looking at, and assigns that to be "activeColor".
+void colorRead(uint16_t blackBaseline) {
     static uint8_t stableColorCount = 0; // Counter to track stability of color readings
     static uint8_t bufferIndex = 0;      // Index for the circular buffer
 
@@ -3264,20 +3276,22 @@ void slideCard() // This function proceeds through steps to eject a card from DE
     }
 }
 
-void rotate(uint8_t rotationSpeed, bool direction) // Rotates CW or CCW at a specified speed.
-{
+// Starts rotation CW or CCW at a specified speed.
+void rotate(uint8_t rotationSpeed, bool direction) {
     analogWrite(MOTOR_2_PWM, rotationSpeed);
 
-    if (direction == CW) // CW = "True"
-    {
+    // CW = "True"
+    if (direction == CW) {
         rotatingCW = true;
         rotatingCCW = false;
         stopped = false;
         digitalWrite(MOTOR_2_PIN_1, HIGH);
         digitalWrite(MOTOR_2_PIN_2, LOW);
         currentDisplayState = LOOK_LEFT;
-    } else if (direction == CCW) // CCW = "False"
-    {
+    } 
+    
+    // CCW = "False"
+    else if (direction == CCW) {
         rotatingCW = false;
         rotatingCCW = true;
         stopped = false;
@@ -3289,8 +3303,8 @@ void rotate(uint8_t rotationSpeed, bool direction) // Rotates CW or CCW at a spe
     updateDisplay();
 }
 
-void rotateStop() // Stops yaw rotation and toggles a few rotating states to false.
-{
+// Stops yaw rotation and toggles a few rotating states to false.
+void rotateStop() {
     if (!stopped) {
         stopped = true;
         rotatingCW = false;

@@ -31,11 +31,11 @@ class GoFish : public Game {
         return GamInitResult::StartDealing;
     }
 
-    void handleButtonPress(int buttonPin) override {
-        if (buttonPin == Buttons::GREEN) {
-            nextPlayersTurn();
+    void handleButtonPress(int button) override {
+        if (button == Buttons::GREEN) {
+            nextTurn();
 
-        } else if (buttonPin == Buttons::BLUE) {
+        } else if (button == Buttons::BLUE) {
             // Dispense a card
             displayFace("o  o");
             dispenseCards(1);

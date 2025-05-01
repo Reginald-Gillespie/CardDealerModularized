@@ -44,6 +44,7 @@ void handleFlipCard(); // Example of a core function a game might trigger
 class Game {
   public:
     virtual ~Game() {}
+    uint8_t turnsToAdvance = 0; // Used to advance multiple people forwards
 
     // ===== Required Methods ===
     // You MUST implement these== in your game.
@@ -67,8 +68,8 @@ class Game {
     virtual bool initialize() = 0;
 
     // Handles button presses specifically when currentDealState is AWAITING_PLAYER_DECISION.
-    // buttonPin: The pin number of the button pressed (e.g., BUTTON_PIN_1)
-    virtual void handleButtonPress(int buttonPin) = 0;
+    // button: The pin number of the button pressed (e.g., BUTTON_PIN_1)
+    virtual void handleButtonPress(int button) = 0;
 
     // ===== Optional Methods =====
     // You can change these, it is not required
@@ -136,9 +137,9 @@ class Game {
     }
 
     // Internal function dispatch buttons then restart scrolling text
-    virtual void _handleButtonPress(int buttonPin) {
+    virtual void _handleButtonPress(int button) {
         // Call the subclass's internal method.
-        handleButtonPress(buttonPin);
+        handleButtonPress(button);
 
         // Start up scrolling messages
         resetScrollingMessages();
@@ -192,10 +193,13 @@ class Game {
     }
 
     // Player passes, advance to the next player
-    void nextPlayersTurn() {
+    // Accepts a parameter for how many people to skip while advancing.
+    void nextTurn(uint8_t skipNumber=0) {
         // TODO: add support for moving multiple people forwards
         advanceOnePlayer = true;      // Signal core logic to advance one player
         currentDealState = ADVANCING; // Change state to advancing
+
+        turnsToAdvance = skipNumber + 1;
     }
 
     void setDealAmount(uint8_t amount) {

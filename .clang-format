@@ -1,3 +1,20 @@
+# NOTE - Manually formatting:
+# 
+# Functions should look like this:
+#
+#    // Function that moves DEALR off the active tag, ideally into an empty portion of the circle.
+#    void moveOffActiveColor(bool rotateClockwise) {
+#
+# Not like this:
+#
+#    void moveOffActiveColor(bool rotateClockwise) // Function that moves DEALR off the active tag, ideally into an empty portion of the circle.
+#    {
+#
+# The first is automatically picked up by PlatformIO's intellisense and looks better. The second is not.
+# A lot of functions are created the second way, these are slowly being changed as I work on them.
+
+
+
 BasedOnStyle: LLVM
 IndentWidth: 4
 TabWidth: 4
