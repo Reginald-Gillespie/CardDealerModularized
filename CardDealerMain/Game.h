@@ -13,7 +13,7 @@
 #include <Arduino.h>
 #include "Enums.h"
 #include "Definitions.h"
-#include "Config.ino"
+#include "Config.h"
 
 // Forward declare globals
 extern dealState currentDealState;

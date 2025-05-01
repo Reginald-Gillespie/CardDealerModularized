@@ -2,12 +2,12 @@
 #define GAME_REGISTRY_H
 
 #include <Arduino.h>
-#include <Game.h>
+#include "Game.h"
 
 #define MAX_GAMES 10
 
 // ===> Add Game Imports <===
-#include <games/GoFish.h> // Include all games here
+#include "games/GoFish.h" // Include all games here
 // ==========================
 
 class GameRegistry {

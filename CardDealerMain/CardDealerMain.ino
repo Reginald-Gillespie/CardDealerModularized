@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "Config.ino"
+#include "Config.h"
 
 #pragma region CONFIGURATION
 
