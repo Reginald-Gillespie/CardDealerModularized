@@ -8,12 +8,14 @@
 
 // ===> Add Game Imports <===
 #include "games/GoFish.h" // Include all games here
+#include "games/Uno.h"
 // ==========================
 
 class GameRegistry {
   private:
     // ===> Add Game Instances <===
     GoFish goFishGame;
+    Uno unoGame;
     // ==========================
 
     Game* games[MAX_GAMES];
@@ -21,18 +23,19 @@ class GameRegistry {
     char formattedNameBuffer[20];
 
   public:
+    void registerAllGames() {
+        // ===> Register Games <===
+        addGame(&goFishGame);
+        addGame(&unoGame);
+        // ==========================
+    }
+
     GameRegistry()
         : gameCount(0) {
         for (uint8_t i = 0; i < MAX_GAMES; ++i) {
             games[i] = nullptr;
         }
         registerAllGames();
-    }
-
-    void registerAllGames() {
-        // ===> Register Games <===
-        addGame(&goFishGame);
-        // ==========================
     }
 
     bool addGame(Game* game) {

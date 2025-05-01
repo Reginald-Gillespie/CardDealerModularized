@@ -1,6 +1,3 @@
-#define ADAGFX_ALLOW_SMALL_BITMAPS
-
-
 #include <Arduino.h>
 #include "Config.h"
 
@@ -594,24 +591,24 @@ GAMEPLAY FLOW AND DEAL STATE HANDLING FUNCTIONS
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma region State Handling
 
-void checkState() // Always running to make sure DEALR does the right things in the right states.
-{
+// Always running to make sure DEALR does the right things in the right states.
+void checkState() {
     unsigned long currentTime = millis(); // Update time in ms every loop.
 
-    if (currentDealState != previousDealState) // If we change from one state to another, this block lets us do anything that should only happen once during that transition
-    {
+    // If we change from one state to another, this block lets us do anything that should only happen once during that transition
+    if (currentDealState != previousDealState) {
         newDealState = true;
         overallTimeoutTag = currentTime; // Every time the dealState changes, update overall timeout tag.
         previousDealState = currentDealState;
     }
 
-    if (gameOver) // At any point, we can set "gameOver" to "true" and the handleGameOver function will help us exit cleanly.
-    {
+    // At any point, we can set "gameOver" to "true" and the handleGameOver function will help us exit cleanly.
+    if (gameOver) {
         handleGameOver();
     }
 
-    if (errorInProgress) // At any point, we can set "errorInProgress" to "true" and enter into the RESET_DEALR state.
-    {
+    // At any point, we can set "errorInProgress" to "true" and enter into the RESET_DEALR state.
+    if (errorInProgress) {
         if (verbose) {
             Serial.println(F("Error in progress (main loop)."));
         }
@@ -2344,7 +2341,7 @@ void showCards() {
     display.writeDisplay();
 }
 
- // Displays the currently selected number of players.
+// Displays the currently selected number of players.
 void showPlayers() {
     display.clear();
     char players[4];
@@ -2378,8 +2375,8 @@ void startScrollText(const char* text, uint16_t start, uint16_t delay, uint16_t 
     scrollIndex = -1; // Reset the scroll index
 }
 
-void updateScrollText() // Updates scrolling text as we loop.
-{
+// Updates scrolling text as we loop.
+void updateScrollText() {
     if (currentDisplayState == SCREENSAVER)
         return;
 

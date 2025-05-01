@@ -1,0 +1,2 @@
+- [ ] Flip card is not sent when dealing 0 cards.
+- [ ] When spitting multiple cards, rework handling to not retract - and make sure it handles well.

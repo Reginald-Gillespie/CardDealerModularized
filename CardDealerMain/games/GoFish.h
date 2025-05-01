@@ -1,7 +1,7 @@
 #ifndef GO_FISH_H
 #define GO_FISH_H
 
-#include "../Game.h" // Include base class - use relative path
+#include "../Game.h"
 
 class GoFish : public Game {
   public:
@@ -10,8 +10,8 @@ class GoFish : public Game {
         return "GO FISH";
     }
 
-    const String* getDisplayMessages(uint8_t& count) override {
-        static const String messages[] = {
+    virtual const char** getDisplayMessages(uint8_t &count) {
+        static const char* messages[] = { 
             "  BLUE = FISH  ",
             "  GREEN = PASS  "
         };
@@ -25,7 +25,7 @@ class GoFish : public Game {
 
     bool initialize() override {
         // Start GoFish with 7 cards each
-        setDealAmount(7);
+        setDealAmount(0);
 
         // Let the system know to start dealing right away
         return GamInitResult::StartDealing;

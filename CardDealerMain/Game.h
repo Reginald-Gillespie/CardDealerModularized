@@ -45,9 +45,10 @@ class Game {
   public:
     virtual ~Game() {}
     uint8_t turnsToAdvance = 0; // Used to advance multiple people forwards
+    bool lockedFace = false; // Let the main file known we want the face locked to what we set it to
 
     // ===== Required Methods ===
-    // You MUST implement these== in your game.
+    // You MUST implement these in your game.
 
     // Returns the display name of the game (e.g., "GO FISH")
     virtual const char* getName() const = 0;
@@ -112,10 +113,8 @@ class Game {
 
     // Called every loop to manage display updates - by default it will cycle through the messages array
     virtual void handleAwaitDecisionDisplay() {
-        // Serial.println("handleAwaitDecisionDisplay called"); // Debugging
-        // Serial.print("messageRepetitions: "); Serial.println(messageRepetitions); // Debugging
-        // Serial.print("lastMessageRepetitions: "); Serial.println(lastMessageRepetitions); // Debugging
-        // Serial.print("displayMessageIndex: "); Serial.println(displayMessageIndex); // Debugging
+        if (lockedFace) return; // Don't run update the display if we've locked a face or a message 
+        // TODO: locked face needs to support scrolling messages
 
         if (messageRepetitions != lastMessageRepetitions) {
             lastMessageRepetitions = messageRepetitions;
@@ -160,8 +159,6 @@ class Game {
     bool scrollingStarted = false;
     int displayMessageIndex = 0;
 
-    // uint8_t messageRepetitions = 0; // TODO move handling of message lines into display array that is managed here...
-
     void dispenseCards(uint8_t amount) {
         for (uint8_t i = 0; i < amount; ++i) {
             _dealSingleCard();
@@ -170,6 +167,7 @@ class Game {
 
     // Reset the scrolling messages to the start
     void resetScrollingMessages() {
+        if (lockedFace) return;
         displayMessageIndex = 0;
         scrollingStarted = true;
         lastMessageRepetitions = -2;
@@ -181,7 +179,18 @@ class Game {
         lastDisplayState = currentDisplayState;
         customFace = face;
         currentDisplayState = displayState::CUSTOM_FACE;
+
         updateDisplay();
+    }
+
+    // Allow normall scrolling text
+    void unlockFace() {
+        lockedFace = false;
+    }
+
+    // Prevent scrolling text from taking over the display
+    void lockFace() {
+        lockedFace = true;
     }
 
     // Restore whatever state the face was in before running displayFace
