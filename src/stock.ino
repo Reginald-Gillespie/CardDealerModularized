@@ -1926,6 +1926,24 @@ void checkButton(int buttonPin, unsigned long& lastPress, int& lastButtonState, 
     lastButtonState = currentButtonState; // Update the last button state
 }
 
+// Go back. TODO: move to differnet region.
+void exitButtonAction() {
+    if (currentDealState != IDLE) {
+        if (toolsMenuActive) {
+            toolsExit = true;
+        } else {
+            gamesExit = true;
+        }
+        displayFace("EXIT");
+        rotateStop();
+        flywheelOff();
+        delay(1000);
+        currentDealState = RESET_DEALR;
+    } else {
+        goBack();
+    }
+}
+
 void onButton1Release() {
     // This function handles what happens when we release Button 1 (green). It matters that the action happens on "release" so we can use long-click in some cases.
 
@@ -1980,30 +1998,18 @@ void onButton3Release() {
 }
 
 void onButton4Release() {
-    // This function handles what happens when we release Button 4 (red).
+    // Red button exits, unless we're in a game waiting for player decision, in which case we want to use this button for actions
 
-    // Because this is the back button, we can't do this... TODO: look at whether the game class overrides the button4 call. Maybe call the function and if it returns false then go back or smth?
-    // if (currentDealState == AWAITING_PLAYER_DECISION) {
-    //     if (currentGamePtr) {
-    //         currentGamePtr->_handleButtonPress(BUTTON_PIN_3); // If Yellow had a game function
-    //     }
-    //     // else if (taglessGame) { } // No action for Yellow in tagless await?
-    // }
-
-    if (currentDealState != IDLE) {
-        if (toolsMenuActive) {
-            toolsExit = true;
-        } else {
-            gamesExit = true;
+    if (currentDealState == AWAITING_PLAYER_DECISION) {
+        if (currentGamePtr) {
+            currentGamePtr->_handleButtonPress(BUTTON_PIN_4); // If Yellow had a game function
         }
-        displayFace("EXIT");
-        rotateStop();
-        flywheelOff();
-        delay(1000);
-        currentDealState = RESET_DEALR;
+        // else if (taglessGame) { } // No action for Red in tagless await?
     } else {
-        goBack();
+        // Otherwise use it as the exit button
+        exitButtonAction();
     }
+
 }
 
 void onButton1LongPress() {
@@ -2049,22 +2055,28 @@ void onButton3LongPress() {
 }
 
 void onButton4LongPress() {
-    overallTimeoutTag = millis();
-    scrollDelayTime = 0;
-    scrollingStarted = false;
-    scrollingMenu = false;
-    messageRepetitions = 0;
-    scrollIndex = -1;
+    if (currentDealState == AWAITING_PLAYER_DECISION) {
+        // Preform exit action with long-press on APD, this allows us to use a single red button press for an action
+        exitButtonAction();
 
-    // Serial.println("Shortcut to *1. DEAL SINGLE CARD");
-    toolsMenuActive = true;
-    currentToolsMenu = 0;
-    currentDisplayState = SELECT_TOOL;
-    updateDisplay();
-    buttonInitialization = true;
-    blinkingAnimationActive = false;
-    initialAnimationInProgress = false;
-    scrollingComplete = true;
+    } else {
+        overallTimeoutTag = millis();
+        scrollDelayTime = 0;
+        scrollingStarted = false;
+        scrollingMenu = false;
+        messageRepetitions = 0;
+        scrollIndex = -1;
+
+        // Serial.println("Shortcut to *1. DEAL SINGLE CARD");
+        toolsMenuActive = true;
+        currentToolsMenu = 0;
+        currentDisplayState = SELECT_TOOL;
+        updateDisplay();
+        buttonInitialization = true;
+        blinkingAnimationActive = false;
+        initialAnimationInProgress = false;
+        scrollingComplete = true;
+    }
 }
 
 void resetTagsOnButtonPress() {

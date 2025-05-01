@@ -41,12 +41,6 @@ class GoFish : public Game {
             dispenseCards(1);
         }
     }
-
-    // ===== Optional Overrides =====
-
-    void onMainDealEnd() override {
-        Serial.println(F("GoFish: Main deal complete. Entering post-deal phase."));
-    }
 };
 
 #endif // GO_FISH_H
