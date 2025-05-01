@@ -1,114 +1,8 @@
+#define ADAGFX_ALLOW_SMALL_BITMAPS
+
+
 #include <Arduino.h>
 #include "Config.h"
-
-#pragma region CONFIGURATION
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/*
-EDITING DEALR'S DEALING FACES
-While dealing, your Card Dealing Robot can make all kinds of faces. You can modify what these look like by editing the symbols between the quotes. Just remember, every
-face must be exactly four characters long, including spaces.
-*/
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-const char* EFFORT = "X  X";     // The face DEALR makes in unrigged games while dealing a card
-const char* MONEY = "$  $";      // The face DEALR makes in rigged games while dealing a marked card
-const char* LOOK_SMALL = "o  o"; // The face DEALR makes in unrigged games while dealing an unmarked card
-const char* LEFT = ">  >";       // The face DEALR makes when rotating clockwise
-const char* RIGHT = "<  <";      // The face DEALR makes when rotating counter-clockwise
-const char* LOOK_BIG = "O  O";   // The face DEALR makes right before dealing a card in a regular game
-const char* WILD = "@  @";       // The face DEALR makes right before dealing a marked card in a rigged game
-const char* SNEAKY = "=  =";     // The face DEALR makes right before dealing an unmarked card in a rigged game
-
-struct DisplayAnimation // This little block has to come before the animation definitions, which let you change the faces DEALR makes.
-{
-    const char** frames;            // Pointer to array of frames
-    const unsigned long* intervals; // Pointer to array of timing intervals
-    uint8_t numFrames;              // Number of frames in the animation
-};
-
-#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof(arr[0])) // This line makes it so we don't have to count how many frames each animation has manually.
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/*
-EDITING ANIMATIONS
-DEALR comes stock with two animations: one quick blinking animation it does right on boot, and one "screensaver" animation it does when it's bored.
-If you look under "Initial blinking animation," you'll notice a series of symbols in quotes. Each four-character section between the quotes is a "frame."
-For example: "O  O" is two wide eyes separated by two spaces. You can change these sections to anything you want, as long as you have exactly 4 characters.
-So "X  X" works, "MARK" works, but "GUS" is too short and would need to be " GUS" or "GUS ". Each "frame" corresponds with an interval, or the amount of
-time that frame should be displayed for in milliseconds. So if you want a frame to say "MARK" for 1 second, look at the next line, find the corresponding interval,
-and type 1000.
-
-The number of frames must equal the number of intervals, so if you add frames to the end of an animation, make sure you remember to add new intervals for those frames.
-
-You can create new animations and call them in the script, but if you're just getting started, try changing some frames in the existing animations to see what happens!
-*/
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// Initial blinking animation
-const char* introFrames[] = {
-    "O  O", // Frame 1
-    "-  -", // Frame 2
-    "O  O", // Frame 3
-    "-  -", // Frame 4
-    "O  O"
-}; // Frame 5
-const unsigned long introIntervals[] = {
-    1100, // Interval 1
-    75,   // Interval 2
-    180,  // Interval 3
-    75,   // Interval 4
-    1100
-}; // Interval 5
-const DisplayAnimation initialBlinking = { introFrames, introIntervals, ARRAY_SIZE(introFrames) };
-
-// Screensaver blinking animation
-const char* screensaveFrames[] = {
-    "O  O", // Frame 1
-    "-  -", // Frame 2
-    "O  O", // Frame 3
-    "-  -", // Frame 4
-    "a  a", // Frame 5
-    "_  _", // Frame 6
-    "-  -", // Frame 7
-    "_  _"
-}; // Frame 8
-const unsigned long screensaveIntervals[] = {
-    2000, // Interval 1
-    75,   // Interval 2
-    3000, // Interval 3
-    75,   // Interval 4
-    3000, // Interval 5
-    3000, // Interval 6
-    1500, // Interval 7
-    4000
-}; // Interval 8
-const DisplayAnimation screensaverBlinking = { screensaveFrames, screensaveIntervals, ARRAY_SIZE(screensaveFrames) };
-
-// Cheating blinking animation
-const char* evilScreensaveFrames[] = {
-    "$  $", // Frame 1
-    "-  -", // Frame 2
-    "$  $", // Frame 3
-    "-  -", // Frame 4
-    "@  @", // Frame 5
-    "_  _", // Frame 6
-    "-  -", // Frame 7
-    "_  _"
-}; // Frame 8
-const unsigned long evilScreensaveIntervals[] = {
-    2000, // Interval 1
-    75,   // Interval 2
-    3000, // Interval 3
-    75,   // Interval 4
-    3000, // Interval 5
-    3000, // Interval 6
-    1500, // Interval 7
-    4000
-}; // Interval 8
-const DisplayAnimation evilScreensaverBlinking = { evilScreensaveFrames, evilScreensaveIntervals, ARRAY_SIZE(evilScreensaveFrames) };
-
-#pragma endregion CONFIGURATION
 
 #pragma region LICENSE
 // SPDX-License-Identifier: MIT
@@ -134,10 +28,12 @@ NHY3274TH is a custom color sensor that uses a custom library.
 #include <avr/pgmspace.h>         // Lets us store values to flash memory instead of SRAM. Filling SRAM completely causes issue with program operation.
 #include <NHY3274TH.h>            // A custom library for interacting with the color sensor.
 
+// Other Card Dealer Components
 #include "Enums.h"
 #include "Game.h"
 #include "GameRegistry.h"
 #include "Definitions.h"
+#include "Faces.h"
 
 #pragma endregion LIBRARIES
 
@@ -182,19 +78,6 @@ Fixed values such as motor speeds, timeouts, and default thresholds.
 #define EEPROM_VERSION_ADDR 0
 #define EEPROM_VERSION 1
 #define UV_THRESHOLD_ADDR (numColors * sizeof(RGBColor) + 2)
-
-// GAMES INCLUDED
-// const uint8_t numGames = 7;            // Number of *index positions* for pre-programmed games (meaning "number of games" - 1). If you add a game, increment this number.
-// const char gamesMenu[][16] PROGMEM = { // "16" defines the max number of characters you can use in these game titles.
-//     "1-GO FISH",
-//     "2-21",
-//     "3-CRAZY EIGHTS",
-//     "4-WAR",
-//     "5-HEARTS",
-//     "6-RUMMY",
-//     "7-CUSTOM GAME", // Custom game is also known as "tagless deal," where all tags except red are removed. User inputs number of cards/players to deal in.
-//     "*8-TOOLS"
-// };
 
 // TOOL MENUS INCLUDED
 const uint8_t numToolMenus = 5;        // Number of *index positions* for pre-programmed tuning routines (so "number of tool menus" - 1). If you add or subtract one, change this number.
@@ -2450,21 +2333,23 @@ void showTool() // Displays the currently selected tool.
     }
 }
 
-void showCards() // Displays the currently selected number of cards.
-{
+// Displays the currently selected number of cards.
+void showCards() {
     display.clear();
-    String cards = "C=" + String(numberOfCards);
-    for (uint8_t i = 0; i < cards.length() && i < 4; i++) {
+    char cards[4];
+    snprintf(cards, sizeof(cards), "C=%d", numberOfCards);
+    for (uint8_t i = 0; i < strlen(cards) && i < 4; i++) {
         display.writeDigitAscii(i, cards[i]);
     }
     display.writeDisplay();
 }
 
-void showPlayers() // Displays the currently selected number of players.
-{
+ // Displays the currently selected number of players.
+void showPlayers() {
     display.clear();
-    String players = "P=" + String(numberOfPlayers);
-    for (uint8_t i = 0; i < players.length() && i < 4; i++) {
+    char players[4];
+    snprintf(players, sizeof(players), "P=%d", numberOfPlayers);
+    for (uint8_t i = 0; i < strlen(players) && i < 4; i++) {
         display.writeDigitAscii(i, players[i]);
     }
     display.writeDisplay();
@@ -2858,9 +2743,8 @@ UI MANIPULATION FUNCTIONS
 
 void advanceMenu() {
     // Advances menus in UI according to current selection.
-    if (verbose) {
-        Serial.println(F("Advancing menu."));
-    }
+    if (verbose) Serial.println(F("Advancing menu."));
+    
     scrollingStarted = false;
     scrollingComplete = false;
     scrollingMenu = false;

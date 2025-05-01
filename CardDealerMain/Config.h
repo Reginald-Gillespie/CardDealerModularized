@@ -4,7 +4,7 @@
 
 // HANDY TOGGLES AND VALUES
 #define verbose false                                  // Disable most verbose serial prints because they take up a ton of ram.
-bool useSerial = true;                                 // Enables serial output for debugging. Set to false to disable serial output. Some statements need manual uncommenting for memory reasons.
+bool useSerial = false;                                // Enables serial output for debugging. Set to false to disable serial output. Some statements need manual uncommenting for memory reasons.
 bool scrollInstructions = true;                        // Enables/disables the instructions that switch between the initial animation and the games selection menu.
 bool motorStartRoutine = true;                         // Enables/disables each of the motors going back and forth at boot. Useful for debugging, but can be turned off to save a little energy for deals.
 uint8_t riggedColor = 1;                               // Can be used to changed the color tag that marked cards are dealt towards. RED = 1; YELLOW = 2; BLUE = 3; GREEN = 4.

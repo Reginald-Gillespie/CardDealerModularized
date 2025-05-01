@@ -53,10 +53,10 @@ class Game {
     virtual const char* getName() const = 0;
 
     // Returns the messages to loop through
-    virtual const String* getDisplayMessages(uint8_t &count) {
-        static const String messages[] = { 
-            F("Message 1"),
-            F("Another message")
+    virtual const char** getDisplayMessages(uint8_t &count) {
+        static const char* messages[] = { 
+            "START", // Messages here will scroll
+            // "Another message"
         };
         count = sizeof(messages) / sizeof(messages[0]);
         return messages;
@@ -122,13 +122,13 @@ class Game {
             displayMessageIndex++;
 
             uint8_t messageCount = 0;
-            const String* messages = getDisplayMessages(messageCount);
+            const char** messages = getDisplayMessages(messageCount);
             uint8_t nextIndex = 0;
             if (messageCount > 0) { // Catch no messages
                 nextIndex = displayMessageIndex % messageCount;
-                const String thisMessage = messages[nextIndex];
+                const char* thisMessage = messages[nextIndex];
                 Serial.println("Updating message");
-                startScrollText(thisMessage.c_str(), textStartHoldTime, textSpeedInterval, textEndHoldTime);
+                startScrollText(thisMessage, textStartHoldTime, textSpeedInterval, textEndHoldTime);
                 scrollingStarted = true;
             }
         }
