@@ -1,1 +1,1 @@
-- [ ] Flip card is not sent when dealing 0 cards.
+- [ ] Flip card is not sent when dealing 0 cards.g
