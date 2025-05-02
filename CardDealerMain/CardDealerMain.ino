@@ -327,8 +327,8 @@ void handleToolsDealing();                         // This is where we handle de
 void handleToolsAdvancingDecisions();              // This is where we decide which direction to advance in during DEALR's "tools" subroutines
 
 // Functions related to dealing cards
-void dealSingleCard();        // Safe wrapper function for cardDispensingActions. Includes some pre- and post-processing steps.
-void cardDispensingActions(); // The series of actions that deal a single card.
+void dealSingleCard(uint8_t amount=1);        // Safe wrapper function for cardDispensingActions. Includes some pre- and post-processing steps.
+void cardDispensingActions(uint8_t &amount); // The series of actions that deal a single card.
 void prepareForDeal();        // The steps that get us ready to deal a single card.
 
 // Functions related to DEALR rotation and color sensing
@@ -394,7 +394,7 @@ void increaseSetting(); // Function for what happens when Button 3 (yellow) is p
 void checkTimeouts();   // Function for checking to see whether device has been idle a long time, and starting the idle animation.
 
 // Motor Control Functions
-void slideCard();                                   // Function for sliding a card into the flywheel for dealing.
+void slideCard(uint8_t &amount);                                   // Function for sliding a card into the flywheel for dealing.
 void rotate(uint8_t rotationSpeed, bool direction); // Function for rotating. Takes speed and direction as inputs.
 void rotateStop();                                  // Function for stopping rotation.
 void flywheelOn(bool direction);                    // True = "forward"; False = "reverse".
@@ -749,7 +749,8 @@ void handleDealingState() {
     }
 }
 
-void dealSingleCard() {
+// Deal a single card, by default. Can deal multiple if a number is passed.
+void dealSingleCard(uint8_t amount) {
     static uint8_t consecutiveDeals = 0; // Static variable to track consecutive deals. In some circumstances we can deal several cards in a row, but may want to limit how many.
 
     if (currentDisplayState == LOOK_LEFT || currentDisplayState == LOOK_RIGHT) {
@@ -760,7 +761,7 @@ void dealSingleCard() {
     // When "chaotically dealing" in rigged games, we can deal several cards in a row, but want to avoid dealing more than three in a row (suspicious).
     if (consecutiveDeals < 3) {
         while (!cardDealt) {
-            cardDispensingActions();
+            cardDispensingActions(amount);
             if (errorInProgress) {
                 return;
             }
@@ -788,7 +789,8 @@ void dealSingleCard() {
 }
 
 // This is the series of things that actually have to happen to dispense a single card.
-void cardDispensingActions() {
+// Takes in a reference number how many cards to print
+void cardDispensingActions(uint8_t &amount) {
     unsigned long currentTime = millis();
 
     // If there's an error in progress, get us out of the dispensing function.
@@ -801,8 +803,10 @@ void cardDispensingActions() {
     if (!throwingCard) {
         prepareForDeal();
     } else {
-        pollCraw();  // Continuously poll the craw (card-sensing IR sensor) to see if card goes through.
-        slideCard(); // If slideCard executes fully, cardDealt = true
+        // for (uint8_t i = amount; i > 0; i--) {
+            pollCraw();  // Continuously poll the craw (card-sensing IR sensor) to see if card goes through.
+            slideCard(amount); // If slideCard executes fully, cardDealt = true
+        // }
 
         if (currentDisplayState != CUSTOM_FACE && currentTime - expressionStarted > expressionDuration && !handlingFlipCard) {
             // Display DEALR's struggling face for at least "expressionDuration" amount of time
@@ -2023,8 +2027,8 @@ bool checkIfMarked() // Reads a card and determines whether or not that card has
     return markedCard; // Returns "true" if card is marked, "false" otherwise
 }
 
-void pollCraw() // Checks the IR sensor to see whether or not a card is in the mouth of DEALR. Useful for determining whether or not cards have been dealt.
-{
+// Checks the IR sensor to see whether or not a card is in the mouth of DEALR. Useful for determining whether or not cards have been dealt.
+void pollCraw() {
     static unsigned long lastDebounceTime = 0; // Time when the sensor was last debounced
     const unsigned long debounceInterval = 40; // Debounce interval in milliseconds
 
@@ -3118,8 +3122,8 @@ MOTOR CONTROL FUNCTIONS
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma region Motor Control
 
-void slideCard() // This function proceeds through steps to eject a card from DEALR.
-{
+// This function proceeds through steps to eject a card from DEALR.
+void slideCard(uint8_t &amount) {
     unsigned long currentTime = millis(); // Update time
     static unsigned long lastStepTime = 0;
 
@@ -3132,8 +3136,13 @@ void slideCard() // This function proceeds through steps to eject a card from DE
             }
             if (cardLeftCraw == true) // If the IR sensor sees a card has passed through the mouth of DEALR...
             {
-                slideStep = 1;
                 cardLeftCraw = false; // Reset this state for the next card to deal.
+
+                // Only advance state once we've shot enough cards
+                amount--;
+                if (amount <= 0) {
+                    slideStep = 1;
+                }
             }
             break;
 

@@ -29,7 +29,7 @@ extern const char* customFace;
 extern uint8_t messageRepetitions;
 
 // Forward declare core functions games might need
-void dealSingleCard();
+void dealSingleCard(uint8_t amount);
 void advanceMenu(); // Although games shouldn't typically call this directly
 void displayFace(const char* word);
 void startScrollText(const char* text, uint16_t start, uint16_t delay, uint16_t end);
@@ -159,10 +159,13 @@ class Game {
     bool scrollingStarted = false;
     int displayMessageIndex = 0;
 
-    void dispenseCards(uint8_t amount) {
-        for (uint8_t i = 0; i < amount; ++i) {
-            _dealSingleCard();
-        }
+    void dispenseCards(uint8_t amount=1) {
+        // for (uint8_t i = 0; i < amount; ++i) {
+        //     _dealSingleCard();
+        // }
+        
+        dealSingleCard(amount);
+        cardDealt = false;
     }
 
     // Reset the scrolling messages to the start
@@ -218,17 +221,9 @@ class Game {
     }
 
   private:
-    // Internal tracking
-
     // Known when to switch shown messages
     int lastMessageRepetitions = -2;
 
-    // Internal util functions
-
-    void _dealSingleCard() {
-        dealSingleCard();
-        cardDealt = false;
-    }
 };
 
 #endif // GAME_H
