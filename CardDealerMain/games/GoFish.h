@@ -25,7 +25,7 @@ class GoFish : public Game {
 
     bool initialize() override {
         // Start GoFish with 7 cards each
-        setDealAmount(0);
+        setDealAmount(7);
 
         // Let the system know to start dealing right away
         return GamInitResult::StartDealing;

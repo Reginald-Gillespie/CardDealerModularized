@@ -32,7 +32,7 @@ class Uno : public Game {
     }
 
     bool initialize() override {
-        setDealAmount(0);
+        setDealAmount(7);
         return GamInitResult::StartDealing;
     }
 
