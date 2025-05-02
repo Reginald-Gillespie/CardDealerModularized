@@ -117,7 +117,7 @@ const unsigned long errorTimeout = 6000;        // For rotations where we should
 const unsigned long throwExpiration = 4000;     // If, when trying to deal a card, we take longer than this amount of time, throw an error.
 const unsigned long reverseFeedTime = 400;      // Amount of time to reverse the feed servo after a deal (successful or unsuccessful).
 const unsigned long riggedCheckInterval = 2000; // How often we poll the rig switch to see if it has been flipped.
-const unsigned long min360Interval = 1000;      // This variable ensures there's no chance of double-reading the red tag while initializing a tagless deal.
+const unsigned long min360Interval = 1000;      // This variable ensures there's no chance of double-reading the red tag while initializing a rigged deal.
 
 #pragma endregion CONSTANTS
 
@@ -286,7 +286,6 @@ bool postDealStartOnRed = false;           // Indicates if post-deal starts on r
 bool handlingFlipCard = false;      // Indicates whether or not we're currently handling the "flip card" in some games that flip a card after main deal.
 bool currentlyCheckingTags = false; // True when DEALR is rotating around looking to see what tags are present.
 bool adjustInProgress = false;      // Indicates whether or not we're currently fine adjusting to confirm the color of the tag we're looking at.
-bool taglessGame = false;           // Flag for indicating whether or not it will be a tagless game
 bool communityCards = false;        // Indicates whether or not the game has "community cards"
 
 #pragma endregion STATE MACHINE FLAGS
@@ -310,8 +309,6 @@ void handleAdvancingState();               // Handles how to proceed when advanc
 void handleInitializingStateInAdjust();    // Handles when a fine-adjustment is called during initialization to the red tag.
 void handleAdvancingStateInAdjust();       // This is where advancing decisions happen. We have detected an "unknown color," then fine-adjusted to see what color it is.
 void handleDealingState();                 // Handles what happens when we enter the "dealing" state.
-void handleTaglessDealState();             // Handles what happens when we enter a "tagless deal" state.
-void handleTaglessPlayerPostDealAdvance(); // Handless advance moves in tagless post-game
 void handleAdvancingOnePlayer();           // This function is used during post-deals when we only want to advance a single player during post-deal.
 void handleAwaitingPlayerDecision();       // Displays the correct scroll text during "Awaiting Player Decision" deal state.
 void handleResetDealrState();              // Handles what happens when we enter the "reset" state.
@@ -337,14 +334,12 @@ void fineAdjustCheck();                                      // fineAdjustCheck(
 void handleRotationAdjustments();                            // Handles switching directions when doing a "fine adjustment", no matter what direction we were going.
 void moveOffActiveColor(bool rotateClockwise);               // Function that moves us to a part of the circle that doesn't have tags in it, like during a card flip operation. Takes a direction to rotate in as an input.
 void returnToActiveColor(bool rotateClockwise);              // Function that moves us back onto the active color after having moved off.
-void checkRotationTime();                                    // Used during "tagless" deal. We see how long it takes to rotate around in a circle and then divide that up into intervals based on the number of players.
 void colorScan();                                            // Wrapper function for color scanning functions.
 bool checkForColorSpike(uint16_t c, uint16_t blackBaseline); // Bool that checks to see if the color sensor detects a "spike" in color value with respect to the baseline
 
 // Funcations related to gameplay mechanics
 void handleFlipCard(); // Moves to an unused area, displays "FLIP", and then deals a card.
 void handleGameOver(); // Handles when "game over" has been declared by initiating a reset.
-void dealTagless();    // Handles "tagless deals", where we use only the red tag for homing, but can deal to any number of players
 
 // Buttons and Other Sensor Function Prototypes
 void checkButton(int buttonPin, unsigned long& lastPress, int& lastButtonState, unsigned long& pressTime, bool& longPressFlag, uint16_t longPressDuration, void (*onRelease)(), void (*onLongPress)());
@@ -641,10 +636,6 @@ void checkState() {
         case RESET_DEALR:
             handleResetDealrState(); // Handles resetting state flags when exiting a game or dealing with an error.
             break;
-
-        case TAGLESS_DEAL:
-            handleTaglessDealState(); // Handles deals that only use one tag (red by default) to home.
-            break;
     }
 }
 
@@ -718,7 +709,7 @@ void handleDealingState() {
     // Gemini said to add this and I have no clue why so Geronimo.
     if (dealInitialized && cardDealt) {
         cardDealt = false;                                                 // Reset flag
-        if (!postDeal && !toolsMenuActive && !taglessGame) {               // Check if main deal round might be ending
+        if (!postDeal && !toolsMenuActive) {               // Check if main deal round might be ending
             if (activeColor == colorLeftOfDealer && notFirstRoundOfDeal) { // Completed a round?
                 remainingRoundsToDeal--;
                 if (verbose) {
@@ -767,7 +758,7 @@ void dealSingleCard(uint8_t amount) {
             }
         }
         flywheelOff();
-        if (riggedGame && !taglessGame && !toolsMenuActive) {
+        if (riggedGame && !toolsMenuActive) {
             colorStatus[activeColor - 1]++;
             totalCardsToDeal--;
 
@@ -868,12 +859,6 @@ void initializeToRed() // When we start dealing, we don't know where we are, so 
 
 // Executes when currentDealState = ADVANCING.
 void handleAdvancingState() {
-    // If we're advancing, but we're in the tagless game mode and the main deal has completed successfully:
-    if (taglessGame && postDeal) {
-        handleTaglessPlayerPostDealAdvance();
-        return;
-    }
-
     // In this block we can do anything we only want to do each time we enter the "advancing" state from a different state
     if (newDealState) {
         adjustInProgress = false;
@@ -981,12 +966,6 @@ void handleInitializingStateInAdjust() // Handles when a fine-adjustment is call
         resetColorsSeen();           // This is probably redundant since we should have reset colorsSeen before the deal.
         totalCardsToDeal = 0;        // Reset cards-to-deal to zero.
         notFirstRoundOfDeal = false; // We have reset and are initialized and about to commence the first round of a deal.
-        if (taglessGame)             // Tagless games cannot currently be rigged (the state is turned off when tagless is selected), and are handled a little differently.
-        {
-            moveOffActiveColor(CW);          // Move off the red tag in a clockwise fashion.
-            currentDealState = TAGLESS_DEAL; // Set the deal state to the Tagless Deal state.
-            return;
-        }
         if (riggedGame) // If we're initializing to red, and the game is rigged...
         {
             while (!tagsChecked) // If we're dealing a rigged game, then we need to do a full 360 to check what tags are present, and log the order of those tags.
@@ -1019,7 +998,7 @@ void handleAdvancingStateInAdjust() {
         return;
     }
 
-    if (activeColor == 1 && previousActiveColor == 1 && !taglessGame && !postDeal) // If we've done a full circle and hit red a second time in a row, we know we're missing tags! Throw an error.
+    if (activeColor == 1 && previousActiveColor == 1 && !postDeal) // If we've done a full circle and hit red a second time in a row, we know we're missing tags! Throw an error.
     {
         errorInProgress = true;
         while (!scrollingComplete) {
@@ -1073,21 +1052,6 @@ void handleAdvancingStateInAdjust() {
     } else                          // If the game is not rigged...
     {
         handleStandardGameDecisionsAfterFineAdjust();
-    }
-}
-
-// This function helps the "tagless deal" game mode time its advancing moves after the main deal.
-void handleTaglessPlayerPostDealAdvance() {
-    unsigned long currentTime = millis();
-    colorScan();
-
-    rotate(mediumSpeed, CW);
-    if ((cardsInHandToDeal > 0 && (currentTime - lastDealtTime > taglessRotationInterval)) || ((cardsInHandToDeal == 0) && (activeColor == 1))) {
-        rotateStop();
-        if (cardsInHandToDeal <= 0) {
-            cardsInHandToDeal = numberOfPlayers;
-        }
-        currentDealState = AWAITING_PLAYER_DECISION;
     }
 }
 
@@ -1526,28 +1490,6 @@ void handleResetDealrState() {
     updateDisplay();
 }
 
-void handleTaglessDealState() // Handles what happens when we enter a "tagless deal" state.
-{
-    if (newDealState) {
-        newDealState = false;
-        taglessGame = true;
-    }
-
-    if (!dealInitialized) // If we command a "tagless deal," but we're not initialized, initialize to red first.
-    {
-        initializeToRed();
-    }
-
-    if (dealInitialized && !rotationTimeChecked) // If we're doing a tagless deal and have initialized but haven't checked how long a 360 takes to perform, do that first.
-    {
-        checkRotationTime();
-    }
-
-    if (dealInitialized && rotationTimeChecked) {
-        dealTagless();
-    }
-}
-
 void handleIdleState() // Handles what happens in the "IDLE" dealing state.
 {
     if (newDealState == true) {
@@ -1644,73 +1586,6 @@ void handleFlipCard() // Moves to an unused area, displays "FLIP", and then deal
     handlingFlipCard = false;
 }
 
-// Handles "tagless deals", where we use only the red tag for homing, but can deal to any number of players.
-void dealTagless() {
-    unsigned long currentTime = millis();
-
-    if (stopped) {
-        rotate(mediumSpeed, CW);
-    }
-
-    colorScan();
-
-    if (((cardsInHandToDeal > 1) && (currentTime - lastDealtTime > taglessRotationInterval)) || (cardsInHandToDeal <= 1 && activeColor == 1)) // If there are still cards to deal and we've exceeded the taglessRotationInterval...
-    {
-        rotateStop();
-        dealSingleCard();
-        cardDealt = false;
-        cardsInHandToDeal--;
-        if (cardsInHandToDeal <= 0) {
-            cardsInHandToDeal = numberOfPlayers;
-            remainingRoundsToDeal--;
-            if (remainingRoundsToDeal == 0) {
-                // Serial.println(F("Post-deal about to start. Spin a bit more."));
-                lastScrollTime = millis();
-                rotateStop();
-                rotate(mediumSpeed, CW);
-                while (millis() - lastScrollTime <= taglessRotationInterval) {
-                    colorScan();
-                }
-                postDeal = true;
-                rotateStop();
-                cardsInHandToDeal--;
-                currentDealState = AWAITING_PLAYER_DECISION;
-            } else if (postCardsToDeal <= 0) {
-                gameOver = true;
-                return;
-            }
-        }
-
-        lastDealtTime = millis();
-    }
-}
-
-// Used during "tagless" deal. We see how long it takes to rotate around in a circle and then divide that up into intervals.
-void checkRotationTime() {
-    unsigned long currentTime = millis();
-    static bool rotationStarted = false;
-    static unsigned long rotationStartTime = 0;
-
-    if (activeColor == 0 && !rotationStarted) {
-        rotationStarted = true;
-        rotationStartTime = currentTime;
-        rotateStop();
-        rotate(mediumSpeed, CW);
-    }
-
-    colorScan();
-
-    if (activeColor == 1 && !rotationTimeChecked) {
-        static unsigned long rotationEndTime = 0;
-        rotateStop();
-        rotationEndTime = currentTime;
-        rotationTime = rotationEndTime - rotationStartTime;
-        taglessRotationInterval = (rotationTime / numberOfPlayers) * .88; // This value lowers taglessRotationInterval to account for some rotational inertia.
-        lastDealtTime = millis();
-        rotationTimeChecked = true;
-    }
-}
-
 // This function is used during post-deals when we only want to advance a single player at a time.
 void handleAdvancingOnePlayer() {
     while (activeColor < 1) // While we're looking at black, rotate and scan.
@@ -1723,20 +1598,12 @@ void handleAdvancingOnePlayer() {
     if (postDealStartOnRed) // If our post-deal dealt its first card to red, decrement whenever we reach red again.
     {
         if (activeColor == 1) {
-            if (!taglessGame) {
-                postCardsToDeal--;
-            } else {
-                cardsInHandToDeal--;
-            }
+            postCardsToDeal--;
         }
     } else {
         if (activeColor > 1 && previousActiveColor == 1) // If our post-deal dealt its first card to the player left-of-dealer, decrement whenever we pass red.
         {
-            if (!taglessGame) {
-                postCardsToDeal--;
-            } else {
-                cardsInHandToDeal--;
-            }
+            postCardsToDeal--;
         }
     }
 
@@ -1835,10 +1702,6 @@ void onButton1Release() {
     if (currentDealState == AWAITING_PLAYER_DECISION) {
         if (currentGamePtr) {
             currentGamePtr->_handleButtonPress(BUTTON_PIN_1); // TODO: I'd like to change this from passing the button pin to passing a button enum of the color
-        } else if (taglessGame) {
-            // This tagless stuff was not in the original code here... so why did the AI put it here? Oh well, I don't really care about tagless
-            advanceOnePlayer = true;
-            currentDealState = ADVANCING;
         }
         // updateDisplay();
     } else {
@@ -1851,10 +1714,6 @@ void onButton2Release() {
     if (currentDealState == AWAITING_PLAYER_DECISION) {
         if (currentGamePtr) {
             currentGamePtr->_handleButtonPress(BUTTON_PIN_2);
-        } else if (taglessGame) {
-            lastDealtTime = millis();
-            dealSingleCard();
-            cardDealt = false;
         }
         // updateDisplay();
     }
@@ -1873,7 +1732,6 @@ void onButton3Release() {
         if (currentGamePtr) {
             currentGamePtr->_handleButtonPress(BUTTON_PIN_3); // If Yellow had a game function
         }
-        // else if (taglessGame) { } // No action for Yellow in tagless await?
     } else if (currentDisplayState == SCREENSAVER || currentDisplayState == SCROLL_PLACE_TAGS_TEXT || currentDisplayState == SCROLL_PICK_GAME_TEXT) {
         advanceMenu();
     } else if (currentDisplayState == SELECT_PLAYERS || currentDisplayState == SELECT_CARDS || currentDisplayState == SELECT_GAME || currentDealState == IDLE) {
@@ -1888,7 +1746,6 @@ void onButton4Release() {
         if (currentGamePtr) {
             currentGamePtr->_handleButtonPress(BUTTON_PIN_4); // If Yellow had a game function
         }
-        // else if (taglessGame) { } // No action for Red in tagless await?
     } else {
         // Otherwise use it as the exit button
         exitButtonAction();
@@ -2189,8 +2046,8 @@ void logBlackBaseline() // Reads RGB values of "black" for storing to EEPROM
     writeColorToEEPROM(0, newColor);
 }
 
-void checkForTags360() // This function spins from red to red and logs what tags are seen.
-{
+// This function spins from red to red and logs what tags are seen.
+void checkForTags360() {
     unsigned long currentTime = millis();
     // Serial.print(F("currentTime = "));
     // Serial.println(currentTime);
@@ -2198,8 +2055,6 @@ void checkForTags360() // This function spins from red to red and logs what tags
         // Serial.println(F("Checking tags!"));
         currentlyCheckingTags = true;
         checkForTags360StartTime = currentTime;
-        // Serial.print(F("Initialization start time = "));
-        // Serial.println(checkForTags360StartTime);
     }
 
     if (activeColor > 0 && colorStatus[activeColor - 1] == -1) // Set red to first index position, 0
@@ -2595,28 +2450,6 @@ void updateDisplay() {
             displayFace("FLIP");
             break;
 
-        case TAGLESS_DISPLAY:
-            if (!scrollingStarted) {
-                delay(100);
-                if (messageLine % 2 == 0) {
-                    startScrollText("REMOVE ALL TAGS EXCEPT RED.", 1000, textSpeedInterval, 1000);
-                } else {
-                    startScrollText("GREEN TO START   ^", 1000, textSpeedInterval, 1000);
-                }
-                scrollingStarted = true;
-            }
-
-            if (messageRepetitions >= 2) {
-                messageRepetitions = 0;
-                scrollingStarted = false;
-            }
-            updateScrollText();
-
-            if (scrollingComplete) {
-                currentDealState = TAGLESS_DEAL;
-            }
-            break;
-
         case CUSTOM_FACE:
             displayFace(customFace);
             break;
@@ -2715,8 +2548,8 @@ void runAnimation(const DisplayAnimation& animation) {
 void handleAwaitingPlayerDecision() {
     // Displays the correct scroll text during "Awaiting Player Decision" deal state.
 
-    // Check if game should be over (excluding tagless special case)
-    if (postDeal && postCardsToDeal <= 0 && !taglessGame) {
+    // Check if game should be over
+    if (postDeal && postCardsToDeal <= 0) {
         if (currentGamePtr) currentGamePtr->onGameOver(); // Let game do final actions if needed
         gameOver = true;                                  // Signal main loop game is over
         return;
@@ -2725,12 +2558,6 @@ void handleAwaitingPlayerDecision() {
     // If a game is active, let it handle its display
     if (currentGamePtr) {
         currentGamePtr->handleAwaitDecisionDisplay();
-    } else if (taglessGame && postDeal) {
-        // Not sure what if anything is supposed to go here
-        displayFace("?");
-    } else {
-        // This should never be hit
-        displayFace("?");
     }
 }
 #pragma endregion 14 - Segment Display
@@ -2945,12 +2772,6 @@ void advanceMenu() {
             // Or maybe this goes on the switch for current deal state? print in handler to test if calls are repetitive
             break;
 
-        case TAGLESS_DISPLAY:
-            messageLine = 0;
-            scrollingComplete = true;
-            currentDealState = TAGLESS_DEAL;
-            break;
-
         case LOOK_STRAIGHT:
             break;
 
@@ -3039,11 +2860,6 @@ void goBack() // Returns to prior menu, or exits program.
         case SCREENSAVER:
             // If we're watching the screensaver and someone hits the back button, the system should wake up.
             advanceMenu();
-            break;
-
-        case TAGLESS_DISPLAY:
-            numPlayersLocked = false;
-            currentDisplayState = SELECT_PLAYERS;
             break;
 
         case LOOK_STRAIGHT:
@@ -3627,7 +3443,6 @@ void resetFlags() // Resets all state machine flags when called.
     startCheckingForMarked = false;
     tagsPresent = false;
     tagsChecked = false;
-    taglessGame = false;
     throwingCard = false;
     totalCardsToDeal = 0;
     for (uint8_t i = 0; i < maxTagColors; i++) {
