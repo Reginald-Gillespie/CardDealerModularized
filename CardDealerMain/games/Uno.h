@@ -101,7 +101,7 @@ class Uno : public Game {
 
     // Get the string representing what is in the pot, for example +4*2 for 2 +4's
     const char* getPotSizeTypeString() {
-        static char potString[8];
+        static char potString[6];
         snprintf(potString, sizeof(potString), "+%d*%d", drawType, drawPot/drawType);
         return potString;
     }

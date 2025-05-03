@@ -2943,12 +2943,19 @@ void slideCard(uint8_t &amount) {
     unsigned long currentTime = millis(); // Update time
     static unsigned long lastStepTime = 0;
 
+    // Debug why it only dispenses 12 when it should do 20
+    // static char potString[6];
+    // snprintf(potString, sizeof(potString), " %d ", amount);
+    // displayFace(potString);
+    // delay(10);
+
     switch (slideStep) {
         case 0: // Start feeding card with feed servo:
             if (slideStep != previousSlideStep) {
                 previousSlideStep = slideStep;
-                feedCard.write(150); // Advances feed motor to feed card towards mouth
+                feedCard.write(180); // Advances feed motor to feed card towards mouth
                 lastStepTime = currentTime;
+                overallTimeoutTag = currentTime;
             }
             if (cardLeftCraw == true) // If the IR sensor sees a card has passed through the mouth of DEALR...
             {
@@ -2956,6 +2963,8 @@ void slideCard(uint8_t &amount) {
 
                 // Only advance state once we've shot enough cards
                 amount--;
+                throwStart = currentTime; // Reset the time we started throwing cards to avoid a timeout
+                
                 if (amount <= 0) {
                     slideStep = 1;
                 }
@@ -3320,14 +3329,20 @@ void handleThrowingTimeout(unsigned long currentTime) {
     static bool retractStarted = false;
     static bool retractCompleted = false;
 
-    if (currentTime - throwStart >= throwExpiration && !retractStarted && !retractCompleted) // For handling dealing timeout.
-    {
+    // For handling dealing timeout.
+    if (currentTime - throwStart >= throwExpiration && !retractStarted && !retractCompleted) {
         retractStarted = true;
         retractStartTime = currentTime;
         feedCard.write(30);
+        
+        // Let us know about the error
+        // displayFace("TIME");
+
         delay(20); // Smoothing delay
         flywheelOn(false);
         delay(20); // Smoothing delay
+
+        // delay(100);
     }
 
     if (retractStarted && currentTime - retractStartTime >= retractDuration) {
