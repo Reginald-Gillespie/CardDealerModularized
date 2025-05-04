@@ -3,7 +3,7 @@
 #ifndef SHARED_ENUMS_H
 #define SHARED_ENUMS_H
 
-#include "Definitions.h"
+#include "PinDefintions.h"
 
 // DEAL STATE: Tracks DEALR's operational states
 enum dealState {

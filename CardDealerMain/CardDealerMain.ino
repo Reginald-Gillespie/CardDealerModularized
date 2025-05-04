@@ -29,7 +29,7 @@ NHY3274TH is a custom color sensor that uses a custom library.
 #include "Enums.h"
 #include "Game.h"
 #include "GameRegistry.h"
-#include "Definitions.h"
+#include "PinDefintions.h"
 #include "Faces.h"
 #include "HandleButtons.h"
 
@@ -560,7 +560,7 @@ void setup() {
 // MAIN LOOP
 void loop() {
     checkState();    // This function checks what state the DEALR is in (idle, dealing, awaiting player input, etc.) and lets the dealr behave accordingly.
-    checkButtons();  // This function checks to see if buttons are being pressed
+    checkButtons();
     checkTimeouts(); // This function tracks a few overall time-out circumstances (like, when the DEALR should go to sleep because it's bored!)
 }
 
@@ -1625,10 +1625,7 @@ void handleAdvancingOnePlayer() {
 BUTTONS AND SENSOR-HANDLING FUNCTIONS
 */
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma region Buttons and Sensors
-
-
-
+#pragma region Sensors
 
 void checkIfRigged() // Reads the switch on the back of the dealer's head that determines whether games are "rigged" or "unrigged."
 {
@@ -1899,7 +1896,7 @@ void checkForTags360() {
         currentDealState = RESET_DEALR;
     }
 }
-#pragma endregion Buttons and Sensors
+#pragma Sensors
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*

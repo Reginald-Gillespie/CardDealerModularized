@@ -12,7 +12,7 @@
 
 #include <Arduino.h>
 #include "Enums.h"
-#include "Definitions.h"
+#include "PinDefintions.h"
 #include "Config.h"
 
 // Forward declare globals

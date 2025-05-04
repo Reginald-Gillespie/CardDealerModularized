@@ -1,6 +1,7 @@
 #include "Arduino.h"
 #include "Enums.h"
 #include "Game.h"
+#include "Config.h"
 
 // Let C know that these will be declared by this file importing this one - TODO: see what can be defined in here instead
 extern displayState currentDisplayState;
@@ -23,7 +24,6 @@ extern bool toolsMenuActive;
 extern bool initialAnimationInProgress;
 extern bool scrollingComplete;
 extern bool initialAnimationComplete;
-extern bool scrollInstructions;
 extern bool numCardsLocked;
 
 void displayFace(const char* word);
@@ -316,6 +316,7 @@ void checkButton(int buttonPin, unsigned long& lastPress, int& lastButtonState, 
     lastButtonState = currentButtonState; // Update the last button state
 }
 
+// This function checks to see if buttons are being pressed
 void checkButtons() {
     static unsigned long lastPress1 = millis(), lastPress2 = millis(),
                          lastPress3 = millis(), lastPress4 = millis();

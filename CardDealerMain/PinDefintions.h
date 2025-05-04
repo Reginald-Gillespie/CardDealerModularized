@@ -6,11 +6,11 @@
 #define RIG_SWITCH A6
 
 // MOTOR PINS
-#define MOTOR_1_PIN_1 9 // Motor 1 pins control the card-throwing flywheel direction.
+#define MOTOR_1_PIN_1 9  // Motor 1 pins control the card-throwing flywheel direction.
 #define MOTOR_1_PIN_2 10
-#define MOTOR_1_PWM 11  // Motor 1 PWM controls the speed of the flywheel.
-#define MOTOR_2_PWM 5   // Motor 2 PWM controls the speed of rotation for the (yaw) motor.
-#define MOTOR_2_PIN_2 6 // Motor 2 pins control the yaw motor direction.
+#define MOTOR_1_PWM 11   // Motor 1 PWM controls the speed of the flywheel.
+#define MOTOR_2_PWM 5    // Motor 2 PWM controls the speed of rotation for the (yaw) motor.
+#define MOTOR_2_PIN_2 6  // Motor 2 pins control the yaw motor direction.
 #define MOTOR_2_PIN_1 7
 #define FEED_SERVO_PIN 3 // This pin controls the card feeding servo motor.
 
