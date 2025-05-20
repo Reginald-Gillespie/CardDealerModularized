@@ -1625,6 +1625,23 @@ SENSOR-HANDLING FUNCTIONS
 */
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// Counter color bias.
+void normalizeRaw(uint16_t* r, uint16_t* g, uint16_t* b) {
+    // These values were obtained by dividing the averaging of r+g+b read over black, by the value given from each sensor. 
+    // Multiplying each read color by that now normalizes them all to be roughly the same when reading black, and more accurate when reading other colors.   
+    float rGain = 1.22;
+    float gGain = 0.6;
+    float bGain = 1.92;
+
+    uint32_t rVal = (uint32_t)(*r * rGain);
+    uint32_t gVal = (uint32_t)(*g * gGain);
+    uint32_t bVal = (uint32_t)(*b * bGain);
+
+    *r = min(rVal, 65535UL);
+    *g = min(gVal, 65535UL);
+    *b = min(bVal, 65535UL);
+}
+
 void checkIfRigged() // Reads the switch on the back of the dealer's head that determines whether games are "rigged" or "unrigged."
 {
     uint8_t rigSwitchValue = analogRead(RIG_SWITCH); // A6 cannot use digitalRead(), so we do an analogRead() and assign that value as "on" or "off" with this variable.
@@ -1700,6 +1717,8 @@ void colorRead(uint16_t blackBaseline) {
 
     uint16_t r, g, b, c;
     sensor.getRawData(&r, &g, &b, &c);
+    normalizeRaw(&r, &g, &b);
+
     totalColorValue = r + g + b;
 
     // Serial.print("Red: ");
@@ -1791,6 +1810,8 @@ void logBlackBaseline() // Reads RGB values of "black" for storing to EEPROM
     for (int j = 0; j < numSamples; j++) {
         uint16_t r, g, b, c;
         sensor.getRawData(&r, &g, &b, &c);
+        normalizeRaw(&r, &g, &b);
+
         totalR += r;
         totalG += g;
         totalB += b;
@@ -2870,6 +2891,8 @@ void recordColors(int startIndex) // This function scans, records, and saves col
         for (int j = 0; j < numSamples; j++) {
             uint16_t r, g, b, c;
             sensor.getRawData(&r, &g, &b, &c);
+            normalizeRaw(&r, &g, &b);
+            
             totalR += r;
             totalG += g;
             totalB += b;
